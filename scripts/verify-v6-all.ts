@@ -55,6 +55,11 @@ const STEPS: VerificationStep[] = [
     label: "Python Digital Twin, Flight Recorder & Chaos Suite (26 tests)",
     command: process.platform === "win32" ? "py -m pytest -v" : "python3 -m pytest -v",
   },
+  {
+    id: "STEP_8_SOAK_REPLAY",
+    label: "Continuous Multi-Hour Clinical Soak Replay & Dual-Objective Gate (tools/soak-replay.ts)",
+    command: "npx tsx tools/soak-replay.ts",
+  },
 ];
 
 function main() {
