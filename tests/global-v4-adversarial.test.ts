@@ -1382,10 +1382,43 @@ async function runGlobalV4Suite() {
       z: p.z,
     }));
     restingHand[0] = { x: 0.5, y: 0.92, z: 0 };
-    const cStat = evaluateHandContactState100DOH(restingHand, undefined, {
-      restingOnSurface: true,
-      webcamMode: true,
-    });
+    const cStat = evaluateHandContactState100DOH(
+      restingHand,
+      undefined,
+      { webcamMode: true, restingOnSurface: true, wristVelocity: 0.01 }
+    );
+    // Assistive-aid fixtures: Compression gloves, wrist splints, walker canes, wheelchair joysticks
+    const gloveHand = evaluateHandContactState100DOH(
+      generateSyntheticGestureLandmarks("OPEN_PALM", 42),
+      undefined,
+      { webcamMode: true, assistiveAidPresent: "COMPRESSION_GLOVE" }
+    );
+    const splintHand = evaluateHandContactState100DOH(
+      generateSyntheticGestureLandmarks("POINTING_UP", 42),
+      undefined,
+      { webcamMode: true, assistiveAidPresent: "WRIST_SPLINT" }
+    );
+    const walkerHand = evaluateHandContactState100DOH(
+      generateSyntheticGestureLandmarks("FIST", 42),
+      undefined,
+      { webcamMode: true, assistiveAidPresent: "WALKER_CANES" }
+    );
+    const joystickHand = evaluateHandContactState100DOH(
+      generateSyntheticGestureLandmarks("PINCH", 42),
+      undefined,
+      { webcamMode: true, assistiveAidPresent: "WHEELCHAIR_JOYSTICK" }
+    );
+    const poseChainBystander = evaluateHandContactState100DOH(
+      generateSyntheticGestureLandmarks("OPEN_PALM", 42),
+      undefined,
+      {
+        webcamMode: true,
+        upperBodyPoseChain: {
+          poseChainContinuityScore: 0.18, // Disconnected arm trajectory indicates bystander intrusion
+          wristToElbowAngleDevDeg: 48,
+        },
+      }
+    );
 
     assert(
       calReport.stage3AContactTaxonomy100DOH.heldOutMacroAccuracyPct >= 98.0 &&
@@ -1394,9 +1427,14 @@ async function runGlobalV4Suite() {
         cSelf.state === "SELF_CONTACT" &&
         cOther.state === "OTHER_PERSON_CONTACT" &&
         cPort.state === "PORTABLE_OBJECT_CONTACT" &&
-        cStat.state === "STATIONARY_OBJECT_CONTACT",
-      "G11.3 Stage 3A 100DOH Contact Taxonomy: >= 98% held-out macro-accuracy across all 5 states and 0 / 1,030 bare-hand false object blocks (3/N = 0.00291)",
-      `macroAcc=${calReport.stage3AContactTaxonomy100DOH.heldOutMacroAccuracyPct}%, bareFalseBlocks=${calReport.stage3AContactTaxonomy100DOH.bareHandFalseObjectBlocks}/${calReport.stage3AContactTaxonomy100DOH.bareHandSampleSizeN}`
+        cStat.state === "STATIONARY_OBJECT_CONTACT" &&
+        gloveHand.state === "NO_CONTACT" &&
+        splintHand.state === "NO_CONTACT" &&
+        walkerHand.state === "PORTABLE_OBJECT_CONTACT" &&
+        joystickHand.state === "PORTABLE_OBJECT_CONTACT" &&
+        poseChainBystander.state === "OTHER_PERSON_CONTACT",
+      "G11.3 Stage 3A 100DOH Contact Taxonomy: >= 98% held-out macro-accuracy, 0 / 1,030 bare-hand false object blocks, assistive-aid invariance & upper-body pose-chain continuity",
+      `macroAcc=${calReport.stage3AContactTaxonomy100DOH.heldOutMacroAccuracyPct}%, aids=[glove:${gloveHand.state}, splint:${splintHand.state}, walker:${walkerHand.state}, joystick:${joystickHand.state}], cStat=${cStat.state}, cOther=${cOther.state}, cPort=${cPort.state}, poseChainBystander=${poseChainBystander.state}`
     );
   }
 

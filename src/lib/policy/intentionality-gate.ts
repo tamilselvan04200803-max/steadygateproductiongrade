@@ -44,6 +44,8 @@ export interface EvaluateIntentionalityInput {
   hypomimiaOrDystoniaAdapted?: boolean;
   tremorAmplitudeRms?: number;
   dyskinesiaEnvelopeRms?: number;
+  dyskinesiaLikelihood?: number;
+  stabilizedWristTrajectory?: number[];
   faceScratchDetected?: boolean;
   chinRestDetected?: boolean;
   allowChinProximity?: boolean;
@@ -307,28 +309,37 @@ export class IntentionalityEnsembleEngine {
     }
 
     // Tremor & dyskinesia-scaled spatial anchor tolerance (only when intrinsic finger posture is locked!)
-    const dyskRms = input.dyskinesiaEnvelopeRms ?? 0;
+    const dyskLikelihood = input.dyskinesiaLikelihood ?? 0;
+    const isDyskinesiaActive = dyskLikelihood >= 0.55 || (input.dyskinesiaEnvelopeRms ?? 0) > 0.02;
+    const dyskRms = input.dyskinesiaEnvelopeRms ?? (isDyskinesiaActive ? 0.035 : 0);
     const tremorRms = input.tremorAmplitudeRms ?? 0;
-    const intrinsicFingersLocked = flexionDriftStd <= 0.032;
+    
+    // When dyskinesia is active, widen L2 anchor radius by +35% and use palm-intrinsic stability
+    const flexLimit = isDyskinesiaActive ? 0.038 : 0.032;
+    const intrinsicFingersLocked = flexionDriftStd <= flexLimit;
+    const baseDrift = isDyskinesiaActive ? 0.042 * 1.35 : 0.042;
     const maxAnchorDriftAllowed = intrinsicFingersLocked
-      ? 0.042 + 1.8 * dyskRms + 0.8 * tremorRms
-      : 0.042;
+      ? baseDrift + 1.8 * dyskRms + 0.8 * tremorRms
+      : baseDrift;
 
     const isConversationalMotion =
-      Boolean(input.inTransit) ||
-      (input.velocity !== undefined && input.velocity > 0.65 && dyskRms === 0) ||
+      Boolean(input.inTransit) && !isDyskinesiaActive ||
+      (input.velocity !== undefined && input.velocity > 0.65 && !isDyskinesiaActive) ||
       anchorDriftRadius > maxAnchorDriftAllowed ||
-      flexionDriftStd > 0.042;
+      flexionDriftStd > (isDyskinesiaActive ? 0.048 : 0.042);
     const signalB2 = isConversationalMotion
       ? 0.0
-      : anchorDriftRadius <= 0.022 && flexionDriftStd <= 0.025
+      : anchorDriftRadius <= (isDyskinesiaActive ? 0.030 : 0.022) && flexionDriftStd <= (isDyskinesiaActive ? 0.035 : 0.025)
       ? 1.0
       : 0.8;
 
     const l2BallisticHold = isConversationalMotion ? 0.0 : signalB2;
+    const l3MaxFlex = isDyskinesiaActive
+      ? 0.038
+      : STEADYGATE_V6_CONFIG.stage3ContactAndIntent.holdPlateauFlexionStdMax.value;
     const l3PostureStability =
-      flexionDriftStd <= STEADYGATE_V6_CONFIG.stage3ContactAndIntent.holdPlateauFlexionStdMax.value
-        ? Math.max(0.75, 1.0 - flexionDriftStd * 8)
+      flexionDriftStd <= l3MaxFlex
+        ? Math.max(0.75, 1.0 - flexionDriftStd * (isDyskinesiaActive ? 6.5 : 8.0))
         : 0.1;
 
     // -------------------------------------------------------------------------

@@ -78,23 +78,25 @@ export function runOutOfSampleCalibrationV6(): CalibrationReportV6 {
   const heldOutNegUncouple: number[] = [];
 
   for (let i = 1; i <= 40; i++) {
-    const spine = generateObjectGraspLandmarks("BOOK_SPINE", i);
-    const c4 = REAL_WORLD_FAILURE_CASES.CASE_4_BOOK_COVER_SIDE_CLAMP.map((p, k) => ({
-      x: p.x + ((i + k) % 3 - 1) * 0.0015,
-      y: p.y + ((i * 2 + k) % 3 - 1) * 0.0015,
-      z: p.z,
-    }));
-    const c5 = REAL_WORLD_FAILURE_CASES.CASE_5_BOOK_SPINE_EDGE_HOLD.map((p, k) => ({
-      x: p.x + ((i + k) % 3 - 1) * 0.0015,
-      y: p.y + ((i * 2 + k) % 3 - 1) * 0.0015,
-      z: p.z,
-    }));
-    const fist = generateSyntheticGestureLandmarks("FIST", i);
-    const c6 = REAL_WORLD_FAILURE_CASES.CASE_6_BARE_FIST_195931.map((p, k) => ({
-      x: p.x + ((i + k) % 3 - 1) * 0.0015,
-      y: p.y + ((i * 2 + k) % 3 - 1) * 0.0015,
-      z: p.z,
-    }));
+    // Realistic pseudo-random generator seeded deterministically
+    const pseudoRand = (seed: number) => {
+      const x = Math.sin(seed * 12.9898 + i * 78.233) * 43758.5453;
+      return (x - Math.floor(x)) * 2 - 1; // [-1, 1]
+    };
+
+    const addJitter = (pts: HandLandmark2D[], seedBase: number) =>
+      pts.map((p, k) => {
+        // Realistic MediaPipe landmark coordinate noise (+-0.005 corresponding to ~3.5 deg joint jitter)
+        const jx = pseudoRand(seedBase + k * 3 + 1) * 0.0045;
+        const jy = pseudoRand(seedBase + k * 3 + 2) * 0.0045;
+        return { x: p.x + jx, y: p.y + jy, z: (p.z ?? 0) + jx * 0.5 };
+      });
+
+    const spine = addJitter(generateObjectGraspLandmarks("BOOK_SPINE", i), 100);
+    const c4 = addJitter(REAL_WORLD_FAILURE_CASES.CASE_4_BOOK_COVER_SIDE_CLAMP, 200);
+    const c5 = addJitter(REAL_WORLD_FAILURE_CASES.CASE_5_BOOK_SPINE_EDGE_HOLD, 300);
+    const fist = addJitter(generateSyntheticGestureLandmarks("FIST", i), 400);
+    const c6 = addJitter(REAL_WORLD_FAILURE_CASES.CASE_6_BARE_FIST_195931, 500);
 
     if (i % 2 === 0) {
       calibPosUncouple.push(evaluateCoupledDipPipBiomechanics(spine).dipPipUncouplingResidual);

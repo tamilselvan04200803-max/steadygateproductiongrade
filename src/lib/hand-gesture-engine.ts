@@ -882,6 +882,12 @@ export function evaluateHandContactState100DOH(
     bareHandConfirmed?: boolean;
     carryingObjectLatched?: boolean;
     carryStage?: "FREE_HAND" | "FIRST_CONTACT" | "CARRYING_OBJECT" | "DE_CONTACT";
+    upperBodyPoseChain?: {
+      wristToElbowAngleDevDeg?: number;
+      elbowToShoulderAlignment?: number;
+      poseChainContinuityScore?: number; // 0..1, < 0.35 indicates disconnected limb / bystander reach
+    };
+    assistiveAidPresent?: "COMPRESSION_GLOVE" | "WRIST_SPLINT" | "WALKER_CANES" | "WHEELCHAIR_JOYSTICK" | "NONE";
   }
 ): HandContactTaxonomyResult {
   const params = handParams || extractHandParameters(landmarks);
@@ -898,9 +904,13 @@ export function evaluateHandContactState100DOH(
     carryingObjectLatched: options?.carryingObjectLatched,
   });
 
-  // 1. Check OTHER_PERSON_CONTACT (caregiver / bystander hand intrusion)
+  // 1. Check OTHER_PERSON_CONTACT (caregiver / bystander hand intrusion with pose-chain continuity)
+  const poseDiscontinuity =
+    options?.upperBodyPoseChain?.poseChainContinuityScore !== undefined &&
+    options.upperBodyPoseChain.poseChainContinuityScore < 0.35;
   const isOtherPerson =
     Boolean(options?.caregiverHandIntrusion) ||
+    poseDiscontinuity ||
     ((options?.boneRatioDeviationPct ?? 0) > 18.0 && (options?.wristJumpNorm ?? 0) > 0.25);
 
   // 2. Check SELF_CONTACT (face/nose scratch CASE_3 or chin-resting)
@@ -930,15 +940,20 @@ export function evaluateHandContactState100DOH(
         options.wristVelocity < 0.04 &&
         !objEnsemble.confirmedObjectInHand));
 
-  // 4. Check PORTABLE_OBJECT_CONTACT (detectObjectGrasp + temporal carry latch, preserving 100% of bare-hand overrides)
+  // 4. Check PORTABLE_OBJECT_CONTACT (detectObjectGrasp + temporal carry latch + physical assistive aids like walker/canes/joysticks)
+  const isAssistiveAidPortableObject =
+    options?.assistiveAidPresent === "WALKER_CANES" ||
+    options?.assistiveAidPresent === "WHEELCHAIR_JOYSTICK";
+
   const isPortableObject =
     !isOtherPerson &&
     !isSelfContact &&
     !isStationarySurface &&
-    !objEnsemble.isCanonicalBareFist &&
-    !params.isCanonicalPinchEyelet &&
-    (graspCheck.isObjectGrasp ||
-      Boolean(options?.carryingObjectLatched && objEnsemble.confirmedObjectInHand));
+    (isAssistiveAidPortableObject ||
+      (!objEnsemble.isCanonicalBareFist &&
+        !params.isCanonicalPinchEyelet &&
+        (graspCheck.isObjectGrasp ||
+          Boolean(options?.carryingObjectLatched && objEnsemble.confirmedObjectInHand))));
 
   let state: HandContactState100DOH = "NO_CONTACT";
   const rawProbs: Record<HandContactState100DOH, number> = {

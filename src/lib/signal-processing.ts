@@ -625,7 +625,8 @@ export class TimestampedCriticalDampedFilter {
     const dtSec = Math.max(0.004, Math.min(0.2, (timestampMs - this.lastTsMs) / 1000));
     this.lastTsMs = timestampMs;
 
-    const theta = Math.pow(Math.max(0.5, Math.min(0.98, basePoleAt30Fps)), dtSec / 0.0333333);
+    const pole = basePoleAt30Fps !== undefined ? basePoleAt30Fps : 0.99;
+    const theta = Math.pow(Math.max(0.5, Math.min(0.995, pole)), dtSec / 0.0333333);
     const g = 1.0 - theta * theta;
     const h = ((1.0 - theta) * (1.0 - theta)) / dtSec;
 
@@ -717,6 +718,7 @@ export class ContinuousTimeBMFLCKalman {
     dominantTremorHz: number;
     secondaryHarmonicHz: number;
     tremorAmplitudeRms: number;
+    voluntaryGroupDelayMs?: number;
   } {
     if (this.t0Ms < 0 || timestampMs - this.t0Ms > 600000 || timestampMs < this.t0Ms) {
       this.reset();
@@ -888,6 +890,13 @@ export class ContinuousTimeBMFLCKalman {
     }
 
     const yClean = yMeas - predictedTremorNow;
+    // Voluntary group delay calculation: CDF effective group delay = (1 + theta) / (1 - theta) * (dt / 2)
+    const effectiveDt = cdfOut.dtSec;
+    const effPole = options?.dyskinesiaActive
+      ? 0.94
+      : STEADYGATE_V6_CONFIG.stage4TremorFilter.cdfBasePoleAt30Fps.value;
+    const thetaVol = Math.pow(Math.max(0.5, Math.min(0.995, effPole)), effectiveDt / 0.0333333);
+    const voluntaryGroupDelayMs = Math.round(((1 + thetaVol) / Math.max(1e-4, 1 - thetaVol)) * (effectiveDt * 500) * 10) / 10;
 
     return {
       yClean,
@@ -896,6 +905,7 @@ export class ContinuousTimeBMFLCKalman {
       dominantTremorHz: dominantHz,
       secondaryHarmonicHz: secondaryHz,
       tremorAmplitudeRms: Math.round(Math.sqrt(totalPower) * 10000) / 10000,
+      voluntaryGroupDelayMs,
     };
   }
 }

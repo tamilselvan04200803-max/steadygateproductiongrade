@@ -15,6 +15,7 @@ import {
   extractMotionSignature,
   calculateNormalizedStability,
   AdaptiveTremorFrequencyTracker,
+  ContinuousTimeBMFLCKalman,
   type TremorLockStatus,
 } from "@/lib/signal-processing";
 import {
@@ -240,6 +241,7 @@ export const LiveCameraStream: React.FC<LiveCameraStreamProps> = ({
   const voterRef = useRef(new GestureVoter(9, 0.6, 0.35));
   const timeVoterRef = useRef(new TimeWeightedGestureVoter(350, 0.6, 0.35));
   const intentionalityEngineRef = useRef(new IntentionalityEnsembleEngine());
+  const continuousTimeBmflcRef = useRef(new ContinuousTimeBMFLCKalman());
   const intentRef = useRef(new IntentTracker());
   const objectCarryRef = useRef(new ObjectCarryStateTracker());
   const errorsRef = useRef(new ErrorCollector());
@@ -781,14 +783,37 @@ export const LiveCameraStream: React.FC<LiveCameraStreamProps> = ({
         }
       }
 
+      // -----------------------------------------------------------------------
+      // STAGE 4: Continuous-Time BMFLC-Kalman Filtering (Executes BEFORE Stage 3B)
+      // -----------------------------------------------------------------------
+      const wristMeasY = normLandmarks[0].y;
+      const bmflcResult = continuousTimeBmflcRef.current.filterSample(wristMeasY, now, {
+        dyskinesiaActive: (tremorLockStatus?.spectralConcentration ?? 0.75) < 0.40,
+      });
+      const dyskLikelihood =
+        (tremorLockStatus?.spectralConcentration ?? 0.75) < 0.40 && intent.wristVelocity > 0.15 ? 0.65 : 0.0;
+      
+      const wristNorm = bmflcResult.yClean - 0.55;
+      trajectoryBufferRef.current.push(wristNorm);
+      if (trajectoryBufferRef.current.length > 90) trajectoryBufferRef.current.shift();
+
+      // -----------------------------------------------------------------------
+      // STAGE 3B: 6-Layer Intentionality, Conformal Set & Leaky SPRT Gate
+      // (Consumes Stage 4 tremor-stabilized trajectory, tremor RMS, and dyskinesia)
+      // -----------------------------------------------------------------------
       const intentMetrics = intentionalityEngineRef.current.evaluate({
         landmarks: normLandmarks,
         handParams: classification.handParams,
         resolvedGesture: classification.gesture,
+        classifierConfidence: classification.confidence,
+        classifierMargin: classification.margin,
         timestampMs: now,
         inTransit: intent.transit,
         velocity: intent.wristVelocity,
         userDistracted: attention < 0.45,
+        tremorAmplitudeRms: bmflcResult.tremorAmplitudeRms,
+        dyskinesiaLikelihood: dyskLikelihood,
+        stabilizedWristTrajectory: trajectoryBufferRef.current,
         faceScratchDetected: faceOverlapDetected,
         chinRestDetected: faceAndChin.chinRestDetected,
         allowChinProximity: cctvModeRef.current === "DIRECT_COMMAND",
@@ -851,10 +876,7 @@ export const LiveCameraStream: React.FC<LiveCameraStreamProps> = ({
         margin: classification.margin,
       };
 
-      const wristNorm = normLandmarks[0].y - 0.55;
-      trajectoryBufferRef.current.push(wristNorm);
-      if (trajectoryBufferRef.current.length > 90) trajectoryBufferRef.current.shift();
-
+      // Telemetry emission (already using Stage 4 stabilized wrist trajectory)
       if (frameCountRef.current % 3 === 0 && onLiveHandFrame) {
         const extractedTelemetry = buildExtractedFrameTelemetry({
           landmarks: normLandmarks,

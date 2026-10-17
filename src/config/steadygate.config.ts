@@ -139,7 +139,7 @@ export const STEADYGATE_V6_CONFIG: SteadyGateV6Config = {
     enableWebGpu: true,
     clinicalHeadGazeFallbackMode: false,
     researchTelemetryOptIn: false,
-    disallowUnattendedThermalGestureOn: false,
+    disallowUnattendedThermalGestureOn: true,
   },
   frameBudgetMs: {
     totalCeilingMs: {
@@ -554,7 +554,7 @@ export const STEADYGATE_V6_CONFIG: SteadyGateV6Config = {
   },
   stage4TremorFilter: {
     cdfBasePoleAt30Fps: {
-      value: 0.9,
+      value: 0.99,
       unit: "ratio",
       provenance: "heuristic",
       normalization: "unitless_ratio",

@@ -505,8 +505,8 @@ export class JointSpaceCKF {
       return -1;
     };
 
-    const qPos = 0.002 * dtSec;
-    const qVel = 0.08 * dtSec;
+    const qPos = 0.005 * dtSec;
+    const qVel = 0.25 * dtSec;
 
     for (let i = 0; i < 21; i++) {
       // 1. Predict step: x_{k|k-1} = x_{k-1} + v_{k-1} * dt
@@ -524,10 +524,10 @@ export class JointSpaceCKF {
       const innovY = raw[i].y - predY;
       const localJump = Math.hypot(innovX, innovY);
 
-      // If a distal joint jumps > 0.32 * palmScale in a single frame while the wrist moved < 0.08 * palmScale,
-      // treat it as a self-occlusion / MediaPipe distal landmark glitch and inflate R_i strongly
-      if (fingerIdx >= 0 && localJump > 0.30 * palmScale && wristJump < 0.12 * palmScale) {
-        const glitchSeverity = Math.min(1.0, (localJump / palmScale - 0.25) * 2.5);
+      // If a distal joint jumps > 0.35 * palmScale in a single frame while the wrist moved < 0.08 * palmScale,
+      // treat it as a self-occlusion / MediaPipe distal landmark glitch and inflate R_i
+      if (fingerIdx >= 0 && localJump > 0.35 * palmScale && wristJump < 0.10 * palmScale) {
+        const glitchSeverity = Math.min(1.0, (localJump / palmScale - 0.30) * 2.2);
         occProb = Math.max(occProb, glitchSeverity);
       }
 
@@ -540,8 +540,8 @@ export class JointSpaceCKF {
 
       let updX = predX + K0 * innovX;
       let updY = predY + K0 * innovY;
-      const updVx = (this.xVel[i] + K1 * innovX) * 0.85;
-      const updVy = (this.yVel[i] + K1 * innovY) * 0.85;
+      const updVx = (this.xVel[i] + K1 * innovX) * 0.92;
+      const updVy = (this.yVel[i] + K1 * innovY) * 0.92;
 
       // 4. Anatomical bone-length constraint projection for distal tips (prevents bone stretching during occlusion)
       if (i === 8 || i === 12 || i === 16 || i === 20) {

@@ -145,7 +145,35 @@ export async function dispatchLanActuation(
     };
   }
 
-  // 2. Enforce Tier 3 Two-Step Safety Chord requirement
+  // 2. Enforce Dual-Mode Thermal Interlock & Tier 3 Two-Step Safety Chord requirement
+  const isDedicatedThermalHeater =
+    device.id === "radiant_heater" ||
+    device.id === "thermal_quartz_heater" ||
+    (device.name?.toLowerCase().includes("radiant quartz heater") ?? false);
+  const isCommandOn =
+    command === "SET_ON" ||
+    command === "TOGGLE_POWER" ||
+    command === "TURN_ON";
+
+  if (
+    isDedicatedThermalHeater &&
+    isCommandOn &&
+    STEADYGATE_V6_CONFIG.features.disallowUnattendedThermalGestureOn
+  ) {
+    return {
+      ok: false,
+      deviceId: device.id,
+      driver,
+      command,
+      simulated: driver === "LOCAL_DB_SIMULATOR",
+      latencyMs: Math.round((performance.now() - t0) * 100) / 100,
+      circuitBreakerState: "CLOSED_HEALTHY",
+      reasonCode: "TX_UNATTENDED_THERMAL_IGNITION_PROHIBITED",
+      error:
+        "Action blocked: Unattended thermal ignition strictly prohibited in default home mode (TX_PROHIBITED). Gesture-OFF always allowed.",
+    };
+  }
+
   if (device.riskTier === 3 && !safetyProof.chordVerified) {
     return {
       ok: false,
