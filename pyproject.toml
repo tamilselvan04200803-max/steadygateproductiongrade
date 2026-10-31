@@ -4,8 +4,8 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "steadygate"
-version = "2.0.0"
-description = "SteadyGate 2.0: Deterministic Hand-Gesture Safety Gate, Flight Recorder, and Digital Twin"
+version = "6.0.0"
+description = "SteadyGate v6.0: Deterministic Tremor-Compensated Hand-Gesture Safety Gate, Flight Recorder, and Digital Twin"
 readme = "README.md"
 requires-python = ">=3.10"
 dependencies = [
@@ -30,3 +30,4 @@ include = ["steadygate*"]
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 python_files = ["test_*.py"]
+addopts = "-p no:schemathesis --basetemp=.pytest_temp"

@@ -1,6 +1,165 @@
 {
-  "updatedAt": "2026-10-16T12:48:49.740Z",
+  "updatedAt": "2026-10-17T06:45:44.989Z",
   "users": {
+    "3": {
+      "id": 3,
+      "name": "H1 Site Admin",
+      "condition": "Parkinson's Disease",
+      "f0Hz": 5.2,
+      "amplitudeRms": 0.045,
+      "notchBandwidthHz": 2,
+      "attentionFloor": 0.6,
+      "adaptiveDwellFactor": 1.3,
+      "medicationPhase": "ON Phase",
+      "palmScale": 1,
+      "fingerFlexibility": 1,
+      "personalizedPrototypes": null,
+      "lastCalibratedAt": "2026-10-15T07:35:10.705Z",
+      "createdAt": "2026-09-29T19:34:09.467Z",
+      "latestExtractedTelemetry": {
+        "frameId": "frm_1792219544962_zfi6p",
+        "capturedAtIso": "2026-10-17T06:45:44.962Z",
+        "classification": {
+          "resolvedGesture": "FIST",
+          "confidence": 0.94,
+          "marginOverRunnerUp": 0.84,
+          "runnerUpGesture": "OPEN_PALM"
+        },
+        "biomechanics": {
+          "fingerExtensions": [
+            0,
+            0.017,
+            0.017,
+            0.017,
+            0.017
+          ],
+          "pipJointAnglesDeg": [
+            105.9,
+            87.1,
+            86,
+            85,
+            85
+          ],
+          "mcpJointAnglesDeg": [
+            79.3,
+            85.9,
+            92.3,
+            99.8
+          ],
+          "palmScaleNormalized": 0.2,
+          "palmAspectRatio": 1.4,
+          "thumbIndexCAperture": 0.468,
+          "thumbToMcpDistances": {
+            "d4_5": 0.132,
+            "d4_9": 0.312,
+            "d4_13": 0.481,
+            "d4_17": 0.665
+          },
+          "normalHandSize": 0.2,
+          "handDistanceEstimate": 4.99,
+          "interFingerTipDistances": {
+            "thumbIndex": 0.468,
+            "indexMiddle": 0.178,
+            "middleRing": 0.219,
+            "ringPinky": 0.22,
+            "thumbPinkySpan": 1.009
+          }
+        },
+        "objectHoldVerification": {
+          "confirmedObjectInHand": false,
+          "apertureOccupancyRatio": 0,
+          "rejectionReason": "NONE"
+        },
+        "tremorAndKinematics": {
+          "dominantTremorHz": 5.2,
+          "tremorAmplitudeRms": 0.045,
+          "spectralConcentration": 0.75,
+          "normalizedStability": 0.88,
+          "lockStage": "FINALIZED_LOCKED"
+        },
+        "sceneOptics": {
+          "luminanceMean": 0.52,
+          "contrastStd": 0.22,
+          "snrDb": 28.4,
+          "appliedGamma": 1,
+          "claheGain": 1
+        }
+      },
+      "latestKinematics": {
+        "f0Hz": 5.2,
+        "amplitudeRms": 0.045,
+        "stabilityRaw": 0.37,
+        "stabilityNorm": 0.88
+      },
+      "latestHandMorphology": {
+        "palmWidth": 0.143,
+        "palmLength": 0.2,
+        "spanRatio": 1.41,
+        "fingerFlexion": [
+          0,
+          0.017328887207895254,
+          0.01714787919272119,
+          0.016965624140474873,
+          0.016965624140474863
+        ],
+        "aspectRatio": 1.4,
+        "tiltAngleDeg": -3,
+        "pipJointAnglesDeg": [
+          105.9,
+          87.1,
+          86,
+          85,
+          85
+        ],
+        "mcpJointAnglesDeg": [
+          79.3,
+          85.9,
+          92.3,
+          99.8
+        ],
+        "thumbIndexCAperture": 0.468,
+        "thumbToMcpDistances": {
+          "d4_5": 0.132,
+          "d4_9": 0.312,
+          "d4_13": 0.481,
+          "d4_17": 0.665
+        },
+        "interFingerTipDistances": {
+          "thumbIndex": 0.468,
+          "indexMiddle": 0.178,
+          "middleRing": 0.219,
+          "ringPinky": 0.22,
+          "thumbPinkySpan": 1.009
+        },
+        "normalHandSize": 0.2,
+        "handDistanceEstimate": 4.99,
+        "thumbPalmarTuckRatio": 0.085,
+        "thumbTipToIndexMcpCrossDist": -0.023,
+        "pinchEyeletSpread": 0.521,
+        "isCanonicalPinchEyelet": false,
+        "dipJointAnglesDeg": [
+          46.4,
+          46.9,
+          47.4,
+          47.4
+        ],
+        "dipPipUncouplingResidual": 0.055,
+        "coupledKinematicLikelihood": 0.821,
+        "dipPipUncouplingLlr": -1.523,
+        "contractureExempted": false,
+        "selfOcclusionProb": 0.146,
+        "metricDepthMetersApprox": 0.417
+      },
+      "latestGesture": {
+        "gesture": "FIST",
+        "confidence": 0.94,
+        "margin": 0.84,
+        "attention": 0,
+        "sceneQuality": 0.86
+      },
+      "updatedAt": "2026-10-17T06:45:44.989Z",
+      "observationSnapshotsCount": 15
+    },
     "user_parkinsons_1": {
       "id": "user_parkinsons_1",
       "name": "Arthur Pendelton",
