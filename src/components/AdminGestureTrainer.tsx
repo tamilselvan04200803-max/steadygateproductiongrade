@@ -172,24 +172,25 @@ export default function AdminGestureTrainer({
   const [datasetText, setDatasetText] = useState<string>("");
   const [uploadedFileName, setUploadedFileName] = useState<string | null>(null);
 
-  const fetchTrainerState = async () => {
-    try {
-      const res = await fetch("/api/admin-train");
-      const data = await res.json();
-      if (data.success && data.model) {
-        setActiveAdminModel(data.model);
-        setAdminTrainedModel(data.model);
-        setModel(data.model);
-        setSamples(data.samples || []);
-        setBenchmark(data.benchmark || null);
-      }
-    } catch (err) {
-      console.error("Failed to load admin trainer state:", err);
-    }
-  };
-
   useEffect(() => {
-    fetchTrainerState();
+    let ignore = false;
+    fetch("/api/admin-train")
+      .then((res) => res.json())
+      .then((data) => {
+        if (!ignore && data.success && data.model) {
+          setActiveAdminModel(data.model);
+          setAdminTrainedModel(data.model);
+          setModel(data.model);
+          setSamples(data.samples || []);
+          setBenchmark(data.benchmark || null);
+        }
+      })
+      .catch((err) => {
+        console.error("Failed to load admin trainer state:", err);
+      });
+    return () => {
+      ignore = true;
+    };
   }, []);
 
   const getEffectiveLighting = () => {

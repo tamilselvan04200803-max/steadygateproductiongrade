@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import { Appliance, UserProfile, RejectCode } from "@/lib/types";
 
 export type HandshakeStage = "IDLE" | "PRIMARY_HOLD" | "AWAITING_CONFIRM" | "CONFIRMED";
@@ -88,11 +88,106 @@ export const DwellRingController: React.FC<DwellRingControllerProps> = ({
 
   const requiredDwellMs = getRequiredDwellMs();
 
-  useEffect(() => {
+  const [prevApplianceId, setPrevApplianceId] = useState(selectedAppliance?.id);
+  if (selectedAppliance?.id !== prevApplianceId) {
+    setPrevApplianceId(selectedAppliance?.id);
     setIsHolding(false);
     setDwellElapsedMs(0);
     setHandshakeStage("IDLE");
-  }, [selectedAppliance?.id]);
+  }
+
+  const evaluateGateOutcome = useCallback(
+    (finalDwellMs: number) => {
+      if (!selectedAppliance || !selectedProfile) return;
+
+      let rejectCode: RejectCode = "NONE";
+      if (liveLighting < 0.35) {
+        rejectCode = "POOR_LIGHT";
+      } else if (liveAttention < 0.5) {
+        rejectCode = "LOW_ATTENTION";
+      } else if (liveMargin < 0.2) {
+        rejectCode = "AMBIGUOUS_CLASS";
+      } else if (
+        baselineMode !== "STEADYGATE" &&
+        liveTremorAmp > selectedProfile.amplitudeRms * 0.9
+      ) {
+        rejectCode = "TREMOR_EXCEEDS_PROFILE";
+      } else if (liveIntentScore < 0.42) {
+        rejectCode = "GESTURE_UNSTABLE";
+      }
+
+      if (rejectCode !== "NONE") {
+        setLastOutcome({
+          status: "REJECTED",
+          rejectCode,
+          message: `Command blocked by Safety Gate (${rejectCode}).`,
+          calibrated: false,
+        });
+
+        onActuateComplete({
+          status: "REJECTED",
+          rejectCode,
+          dwellTimeMs: finalDwellMs,
+          dwellRequiredMs: requiredDwellMs,
+          handshakeStage,
+          calibratedNudge: false,
+          command: `${selectedAppliance.name} -> REJECTED`,
+        });
+        setDwellElapsedMs(0);
+        return;
+      }
+
+      const nextPower = selectedAppliance.powerState === "ON" ? "OFF" : "ON";
+      const calibrated = lastOutcome.status === "REJECTED";
+
+      setHandshakeStage("CONFIRMED");
+      setLastOutcome({
+        status: "ACTUATED",
+        rejectCode: "NONE",
+        message: `${selectedAppliance.name} switched ${nextPower}!`,
+        calibrated,
+      });
+
+      onActuateComplete({
+        status: "ACTUATED",
+        rejectCode: "NONE",
+        dwellTimeMs: finalDwellMs,
+        dwellRequiredMs: requiredDwellMs,
+        handshakeStage: "CONFIRMED",
+        calibratedNudge: calibrated,
+        command: `SET_POWER_${nextPower}`,
+      });
+
+      setTimeout(() => {
+        setHandshakeStage("IDLE");
+        setDwellElapsedMs(0);
+      }, 1000);
+    },
+    [
+      baselineMode,
+      handshakeStage,
+      lastOutcome.status,
+      liveAttention,
+      liveIntentScore,
+      liveLighting,
+      liveMargin,
+      liveTremorAmp,
+      onActuateComplete,
+      requiredDwellMs,
+      selectedAppliance,
+      selectedProfile,
+    ]
+  );
+
+  const evaluateGateOutcomeRef = useRef(evaluateGateOutcome);
+  useEffect(() => {
+    evaluateGateOutcomeRef.current = evaluateGateOutcome;
+  }, [evaluateGateOutcome]);
+
+  const dwellElapsedMsRef = useRef(dwellElapsedMs);
+  useEffect(() => {
+    dwellElapsedMsRef.current = dwellElapsedMs;
+  }, [dwellElapsedMs]);
 
   useEffect(() => {
     if (!isHolding || !selectedAppliance) {
@@ -100,7 +195,7 @@ export const DwellRingController: React.FC<DwellRingControllerProps> = ({
       return;
     }
 
-    holdStartRef.current = performance.now() - dwellElapsedMs;
+    holdStartRef.current = performance.now() - dwellElapsedMsRef.current;
 
     const tick = (now: number) => {
       const elapsed = Math.max(0, Math.round(now - (holdStartRef.current || now)));
@@ -108,7 +203,7 @@ export const DwellRingController: React.FC<DwellRingControllerProps> = ({
 
       if (elapsed >= requiredDwellMs) {
         setIsHolding(false);
-        evaluateGateOutcome(elapsed);
+        evaluateGateOutcomeRef.current(elapsed);
         return;
       }
 
@@ -121,73 +216,6 @@ export const DwellRingController: React.FC<DwellRingControllerProps> = ({
       if (animRef.current) cancelAnimationFrame(animRef.current);
     };
   }, [isHolding, requiredDwellMs, selectedAppliance]);
-
-  const evaluateGateOutcome = (finalDwellMs: number) => {
-    if (!selectedAppliance || !selectedProfile) return;
-
-    let rejectCode: RejectCode = "NONE";
-    if (liveLighting < 0.35) {
-      rejectCode = "POOR_LIGHT";
-    } else if (liveAttention < 0.5) {
-      rejectCode = "LOW_ATTENTION";
-    } else if (liveMargin < 0.2) {
-      rejectCode = "AMBIGUOUS_CLASS";
-    } else if (
-      baselineMode !== "STEADYGATE" &&
-      liveTremorAmp > selectedProfile.amplitudeRms * 0.9
-    ) {
-      rejectCode = "TREMOR_EXCEEDS_PROFILE";
-    } else if (liveIntentScore < 0.42) {
-      rejectCode = "GESTURE_UNSTABLE";
-    }
-
-    if (rejectCode !== "NONE") {
-      setLastOutcome({
-        status: "REJECTED",
-        rejectCode,
-        message: `Command blocked by Safety Gate (${rejectCode}).`,
-        calibrated: false,
-      });
-
-      onActuateComplete({
-        status: "REJECTED",
-        rejectCode,
-        dwellTimeMs: finalDwellMs,
-        dwellRequiredMs: requiredDwellMs,
-        handshakeStage,
-        calibratedNudge: false,
-        command: `${selectedAppliance.name} -> REJECTED`,
-      });
-      setDwellElapsedMs(0);
-      return;
-    }
-
-    const nextPower = selectedAppliance.powerState === "ON" ? "OFF" : "ON";
-    const calibrated = lastOutcome.status === "REJECTED";
-
-    setHandshakeStage("CONFIRMED");
-    setLastOutcome({
-      status: "ACTUATED",
-      rejectCode: "NONE",
-      message: `${selectedAppliance.name} switched ${nextPower}!`,
-      calibrated,
-    });
-
-    onActuateComplete({
-      status: "ACTUATED",
-      rejectCode: "NONE",
-      dwellTimeMs: finalDwellMs,
-      dwellRequiredMs: requiredDwellMs,
-      handshakeStage: "CONFIRMED",
-      calibratedNudge: calibrated,
-      command: `SET_POWER_${nextPower}`,
-    });
-
-    setTimeout(() => {
-      setHandshakeStage("IDLE");
-      setDwellElapsedMs(0);
-    }, 1000);
-  };
 
   const progressPct = Math.min(100, Math.round((dwellElapsedMs / requiredDwellMs) * 100));
   const strokeDashoffset = 283 - (283 * progressPct) / 100;

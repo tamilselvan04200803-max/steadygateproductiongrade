@@ -36,19 +36,19 @@ export const AuditLogView: React.FC<AuditLogViewProps> = ({
   const [filterStatus, setFilterStatus] = useState<string>("ALL");
   const [selectedLog, setSelectedLog] = useState<ActuationLogItem | null>(null);
   const [userDataSnapshot, setUserDataSnapshot] = useState<any>(null);
-  const [loadingUserData, setLoadingUserData] = useState(false);
+  const [loadingUserData, setLoadingUserData] = useState(true);
 
-  const fetchStoredUserData = useCallback(async () => {
-    setLoadingUserData(true);
-    try {
-      const res = await fetch("/api/user-data?limit=50");
-      const data = await res.json();
-      setUserDataSnapshot(data);
-    } catch (err) {
-      console.error("Failed to fetch /api/user-data:", err);
-    } finally {
-      setLoadingUserData(false);
-    }
+  const fetchStoredUserData = useCallback(() => {
+    fetch("/api/user-data?limit=50")
+      .then((res) => res.json())
+      .then((data) => {
+        setUserDataSnapshot(data);
+        setLoadingUserData(false);
+      })
+      .catch((err) => {
+        console.error("Failed to fetch /api/user-data:", err);
+        setLoadingUserData(false);
+      });
   }, []);
 
   useEffect(() => {

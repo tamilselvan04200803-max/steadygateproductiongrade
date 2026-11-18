@@ -12,6 +12,7 @@ __pycache__/
 
 # Next.js Build Output
 /.next/
+/.next_verify/
 /out/
 /build
 /dist

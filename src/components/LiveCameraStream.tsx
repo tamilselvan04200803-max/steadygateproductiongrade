@@ -261,6 +261,7 @@ export const LiveCameraStream: React.FC<LiveCameraStreamProps> = ({
   const cctvModeRef = useRef<"DIRECT_COMMAND" | "CCTV_WAKE_LOCK" | "STRICT_ZONE_GAZE">(
     "DIRECT_COMMAND"
   );
+  const renderFrameRef = useRef<() => void>(() => {});
 
   useEffect(() => {
     cctvModeRef.current = cctvEngagementMode;
@@ -351,8 +352,15 @@ export const LiveCameraStream: React.FC<LiveCameraStreamProps> = ({
     }
   };
 
+  const [prevUserId, setPrevUserId] = useState(user?.id);
+  if (user?.id !== prevUserId) {
+    setPrevUserId(user?.id);
+    if (user?.amplitudeRms) {
+      setTremorInjectionAmp(user.amplitudeRms);
+    }
+  }
+
   useEffect(() => {
-    if (user?.amplitudeRms) setTremorInjectionAmp(user.amplitudeRms);
     if (user?.f0Hz) {
       tremorTrackerRef.current.syncUserBaseline(user.f0Hz, user.amplitudeRms || 0.045);
     }
@@ -1135,7 +1143,9 @@ export const LiveCameraStream: React.FC<LiveCameraStreamProps> = ({
       height - 14
     );
 
-    animFrameRef.current = requestAnimationFrame(renderFrame);
+    animFrameRef.current = requestAnimationFrame(() => {
+      renderFrameRef.current();
+    });
   }, [
     sceneQuality,
     user,
@@ -1151,10 +1161,23 @@ export const LiveCameraStream: React.FC<LiveCameraStreamProps> = ({
     setAttention,
     setSceneQuality,
     sendTelemetry,
+    attention,
+    hud.scene?.contrast,
+    hud.scene?.contrastGain,
+    hud.scene?.gamma,
+    hud.scene?.luminance,
+    hud.scene?.snrDb,
+    localeCountryCode,
+    tremorLockStatus?.activeF0Hz,
+    tremorLockStatus?.spectralConcentration,
+    tremorLockStatus?.stage,
   ]);
 
   useEffect(() => {
-    animFrameRef.current = requestAnimationFrame(renderFrame);
+    renderFrameRef.current = renderFrame;
+    animFrameRef.current = requestAnimationFrame(() => {
+      renderFrameRef.current();
+    });
     return () => {
       if (animFrameRef.current) cancelAnimationFrame(animFrameRef.current);
     };
@@ -1283,6 +1306,9 @@ export const LiveCameraStream: React.FC<LiveCameraStreamProps> = ({
           ref={canvasRef}
           width={960}
           height={640}
+          data-testid="camera-canvas"
+          data-hand-present={hud.handPresent ? "true" : "false"}
+          data-webcam-active={webcamOn ? "true" : "false"}
           className="w-full h-full object-contain block"
         />
 

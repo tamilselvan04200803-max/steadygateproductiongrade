@@ -262,10 +262,6 @@ export const EnrolmentModal: React.FC<EnrolmentModalProps> = ({
     handSamplesBufferRef.current = [];
     liveLandmarkFramesRef.current = [];
     gestureTimelineRef.current = [];
-    setElapsedSec(0);
-    setProgress(0);
-    setSamplesCollected(0);
-    setLandmarkFramesCount(0);
 
     let cancelled = false;
     let isWebcamLive = false;
@@ -694,7 +690,13 @@ export const EnrolmentModal: React.FC<EnrolmentModalProps> = ({
             </div>
 
             <button
-              onClick={() => setStep("RECORDING")}
+              onClick={() => {
+                setElapsedSec(0);
+                setProgress(0);
+                setSamplesCollected(0);
+                setLandmarkFramesCount(0);
+                setStep("RECORDING");
+              }}
               className="w-full py-3.5 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-slate-950 font-bold text-sm shadow-lg shadow-cyan-500/20 transition-all flex items-center justify-center space-x-2"
             >
               <Camera className="w-4 h-4" />

@@ -196,7 +196,15 @@ export default function SteadyGateApp() {
   }, []);
 
   useEffect(() => {
-    fetchAllData();
+    let ignore = false;
+    Promise.resolve().then(() => {
+      if (!ignore) {
+        fetchAllData();
+      }
+    });
+    return () => {
+      ignore = true;
+    };
   }, [fetchAllData]);
 
   const handleTrajectoryUpdate = useCallback(
@@ -413,6 +421,11 @@ export default function SteadyGateApp() {
     actuatedForCurrentHold: true,
   });
 
+  const latestGestureRef = useRef<string>(detectedGesture);
+  useEffect(() => {
+    latestGestureRef.current = detectedGesture;
+  }, [detectedGesture]);
+
   const handleSyntheticGestureSelect = useCallback((gesture: RecognizedGesture) => {
     latestGestureRef.current = gesture;
     setDetectedGesture(gesture);
@@ -426,11 +439,6 @@ export default function SteadyGateApp() {
     setGestureHoldProgress(0);
   }, []);
 
-  const latestGestureRef = useRef<string>(detectedGesture);
-  useEffect(() => {
-    latestGestureRef.current = detectedGesture;
-  }, [detectedGesture]);
-
   const latestMappingsRef = useRef(gestureMappings);
   useEffect(() => {
     latestMappingsRef.current = gestureMappings;
@@ -443,8 +451,6 @@ export default function SteadyGateApp() {
 
   useEffect(() => {
     if (!autoGestureActuation) {
-      setGestureHoldProgress(0);
-      setGestureHoldElapsedMs(0);
       return;
     }
 
@@ -1091,7 +1097,15 @@ export default function SteadyGateApp() {
               </span>
               <button
                 type="button"
-                onClick={() => setAutoGestureActuation((v) => !v)}
+                onClick={() =>
+                  setAutoGestureActuation((v) => {
+                    if (v) {
+                      setGestureHoldProgress(0);
+                      setGestureHoldElapsedMs(0);
+                    }
+                    return !v;
+                  })
+                }
                 className={`px-2.5 py-1 rounded-lg text-[11px] font-mono border ${
                   autoGestureActuation
                     ? "bg-emerald-950/70 border-emerald-600/60 text-emerald-300"
