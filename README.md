@@ -39,7 +39,7 @@ The perception and control loop executes synchronously at **$< 16.8\text{ ms}$ t
 
 ```mermaid
 flowchart TD
-    VideoInput["Webcam Video Stream (30 FPS)"] --> S1["Stage 1: Optical Loop & Flicker Canceler<br/>• UVC capability-probed shutter lock<br/>• Goertzel row-mean 50/60 Hz cancellation (>20 dB)<br/>• 3-tier degrade ladder with luma-only CLAHE (ΔCbCr ≤ 1.5)"]
+    VideoInput["Webcam Video Stream (30 FPS)"] --> S1["Stage 1: Optical Loop & Flicker Canceler<br/>• UVC capability-probed shutter lock<br/>• Goertzel row-mean 50/60 Hz cancellation (&gt;20 dB)<br/>• 3-tier degrade ladder with luma-only CLAHE (ΔCbCr ≤ 1.5)"]
     S1 --> S2["Stage 2: 26-DoF Coupled IK & JointSpaceCKF<br/>• Soft coupled DIP/PIP kinematics (θ_DIP ≈ c θ_PIP)<br/>• Automatic arthritic contracture exemption (0.52 ROM)<br/>• Block-diagonal Constrained Kalman Filter (lag ≤ 35 ms)"]
     S2 --> S3A["Stage 3A: 100DOH 5-State Contact Taxonomy<br/>• Upper-body pose chain (wrist-elbow-shoulder continuity)<br/>• 0 / 1,030 false object blocks on bare hands<br/>• Assistive aid invariance (gloves, splints, canes, joysticks)"]
     S3A --> S4["Stage 4: Continuous-Time BMFLC-Kalman Filter<br/>• Timestamped CDF θ(Δt_k) = 0.990^(Δt_k / 0.0333)<br/>• 22-bin block BMFLC-Kalman (tremor attenuation ≥ 72%)<br/>• Voluntary group delay ≤ 30 ms; dyskinesia likelihood engine"]
@@ -263,5 +263,3 @@ If you use SteadyGate in your research or assistive technology projects, please 
   license = {Apache-2.0}
 }
 ```
-#   s t e a d y g a t e p r o d u c t i o n g r a d e  
- 
