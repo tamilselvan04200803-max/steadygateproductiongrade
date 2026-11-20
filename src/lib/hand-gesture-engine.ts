@@ -198,6 +198,7 @@ export interface AdminGesturePrototype {
   meanLuminance: number;
   meanContrast: number;
   confidenceBoost: number;
+  flexTol?: number;
   pipJointAnglesDeg?: [number, number, number, number, number];
   mcpJointAnglesDeg?: [number, number, number, number];
   normalHandSize?: number;

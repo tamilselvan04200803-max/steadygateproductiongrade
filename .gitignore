@@ -62,6 +62,9 @@ storage/users_personalized.json
 storage/*.jsonl
 storage/user_*.json
 storage/ai_training_dataset_*.json
+storage/recorded_sessions/
 reports/ceiling_breaking_evaluation_*.json
 reports/phaseB_evaluation_*.json
 reports/phase3_execution_scratchpad.md
+docs/reports/*-eval-*.json
+docs/reports/webcam-eval-*.json

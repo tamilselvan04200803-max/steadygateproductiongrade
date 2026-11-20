@@ -152,8 +152,8 @@ SteadyGate simultaneously satisfies both **Safety** (zero false activations) and
 ### 1. Installation
 ```bash
 # Clone the repository
-git clone https://github.com/your-org/steadygate-prior-art-analysis.git
-cd steadygate-prior-art-analysis
+git clone https://github.com/tamilselvan04200803-max/steadygateproductiongrade.git
+cd steadygateproductiongrade
 
 # Install Node.js dependencies
 npm install
@@ -245,7 +245,7 @@ SteadyGate is open-source software licensed under the [Apache License, Version 2
 Contributions from accessibility researchers, engineers, and assistive tech advocates are welcome!
 
 1. 🌟 **Star this repository** if you find this project valuable for assistive technology and accessible computing!
-2. 🐛 **Report issues or suggest features** via [GitHub Issues](https://github.com/your-org/steadygate-prior-art-analysis/issues).
+2. 🐛 **Report issues or suggest features** via [GitHub Issues](https://github.com/tamilselvan04200803-max/steadygateproductiongrade/issues).
 3. 🔀 **Submit a Pull Request**: Check our [Contributing Guide](./CONTRIBUTING.md) and ensure `npm test` passes before submitting.
 
 ---
@@ -259,7 +259,7 @@ If you use SteadyGate in your research or assistive technology projects, please 
   author = {SteadyGate Project Contributors},
   title = {SteadyGate: Deterministic Tremor-Compensated Assistive Hand-Gesture Controller and Safety Gate},
   year = {2026},
-  url = {https://github.com/your-org/steadygate-prior-art-analysis},
+  url = {https://github.com/tamilselvan04200803-max/steadygateproductiongrade},
   license = {Apache-2.0}
 }
 ```

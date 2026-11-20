@@ -1,0 +1,80 @@
+{
+  "testSuite": "optical-pipeline-validation",
+  "timestamp": "2026-11-20T15:51:31.720Z",
+  "testImages": "SYNTHETIC_BITMAP (64x48 downsampled)",
+  "pixelPreprocessingPipeline": "conditionFrameLumaOnly + applyRoiClaheToBuffer + cancelRollingShutterFlicker + evaluateHandRoiMotionBlur",
+  "results": [
+    {
+      "testName": "Low-Light Scene",
+      "lightingCondition": "LOW_LIGHT",
+      "originalLumaMean": 0.135,
+      "originalLumaStd": 0.044,
+      "processedLumaMean": 0.139,
+      "processedLumaStd": 0.069,
+      "contrastRecoveryRatio": 1.58,
+      "gammaApplied": 0.72,
+      "claheActive": true,
+      "degradeStep": "FULL_GAMMA_GUIDED_CLAHE",
+      "chromaDriftDeltaCbCr": 0,
+      "elapsedMs": 1.277,
+      "landmarkRecoverable": true,
+      "snrDbBefore": 9.8,
+      "snrDbAfter": 6.1,
+      "snrImprovementDb": -3.7,
+      "budgetCompliant": true,
+      "chromaPreserved": true
+    },
+    {
+      "testName": "Harsh Glare Scene",
+      "lightingCondition": "GLARE",
+      "originalLumaMean": 0.571,
+      "originalLumaStd": 0.342,
+      "processedLumaMean": 0.511,
+      "processedLumaStd": 0.388,
+      "contrastRecoveryRatio": 1.14,
+      "gammaApplied": 1.278,
+      "claheActive": true,
+      "degradeStep": "FULL_GAMMA_GUIDED_CLAHE",
+      "chromaDriftDeltaCbCr": 0,
+      "elapsedMs": 0.754,
+      "landmarkRecoverable": true,
+      "snrDbBefore": 4.5,
+      "snrDbAfter": 2.4,
+      "snrImprovementDb": -2.1,
+      "budgetCompliant": true,
+      "chromaPreserved": true
+    },
+    {
+      "testName": "Optimal Lighting",
+      "lightingCondition": "OPTIMAL",
+      "originalLumaMean": 0.493,
+      "originalLumaStd": 0.073,
+      "processedLumaMean": 0.493,
+      "processedLumaStd": 0.073,
+      "contrastRecoveryRatio": 1,
+      "gammaApplied": 1,
+      "claheActive": false,
+      "degradeStep": "BYPASSED_OPTIMAL",
+      "chromaDriftDeltaCbCr": 0,
+      "elapsedMs": 0.047,
+      "landmarkRecoverable": true,
+      "snrDbBefore": 16.5,
+      "snrDbAfter": 16.5,
+      "snrImprovementDb": 0,
+      "budgetCompliant": true,
+      "chromaPreserved": true
+    }
+  ],
+  "roiClahe": {
+    "pixelsProcessed": 825,
+    "elapsedMs": 0.392,
+    "snrImprovementDb": 1.7,
+    "landmarkRecoverable": false
+  },
+  "summary": {
+    "allConditionsLandmarkRecoverable": true,
+    "allConditionsBudgetCompliant": true,
+    "allConditionsChromaPreserved": true,
+    "keyDistinction": "Pixel-level optical contrast recovery (CLAHE/gamma on sensor data) is DIFFERENT from landmark noise tolerance (classifier robustness to coordinate jitter). This test validates the FORMER."
+  }
+}

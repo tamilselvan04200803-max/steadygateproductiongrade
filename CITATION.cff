@@ -1,0 +1,18 @@
+cff-version: 1.2.0
+message: "If you use this software in your research or projects, please cite it as below."
+title: "SteadyGate: Deterministic Tremor-Compensated Assistive Hand-Gesture Controller and Safety Gate"
+version: 6.0.0
+date-released: 2026-11-20
+url: "https://github.com/tamilselvan04200803-max/steadygateproductiongrade"
+license: "Apache-2.0"
+keywords:
+  - "assistive-technology"
+  - "accessibility"
+  - "tremor-compensation"
+  - "parkinsons-disease"
+  - "hand-gestures"
+  - "mediapipe"
+  - "computer-vision"
+  - "smart-home"
+  - "edge-ai"
+  - "webassembly"

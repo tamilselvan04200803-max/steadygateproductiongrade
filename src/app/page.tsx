@@ -10,6 +10,8 @@ import { LiveHouseScene } from "@/components/LiveHouseScene";
 import { AuditLogView } from "@/components/AuditLogView";
 import AdminGestureTrainer from "@/components/AdminGestureTrainer";
 import { ShadowModePanel } from "@/components/ShadowModePanel";
+import { RealWebcamEvalCard } from "@/components/RealWebcamEvalCard";
+import { WebcamSessionRecorder } from "@/components/WebcamSessionRecorder";
 import { setAdminTrainedModel } from "@/lib/hand-gesture-engine";
 import {
   DEFAULT_GESTURE_APPLIANCE_MAP,
@@ -1707,6 +1709,19 @@ export default function SteadyGateApp() {
                 </div>
               </div>
             </div>
+
+            {/* Empirical Real-Webcam & Adaptive Model Evaluation Dashboard */}
+            <RealWebcamEvalCard />
+
+            {/* Webcam Landmark Stream Session Recorder */}
+            <WebcamSessionRecorder
+              participantId={selectedProfile?.id || "P01-Parkinsons"}
+              liveLandmarks={liveHandFrame?.landmarks ?? null}
+              liveHandParams={liveHandFrame?.handParams ?? null}
+              webcamActive={!!liveHandFrame?.webcamActive}
+              currentF0Hz={currentF0Hz}
+              currentAmpRms={currentAmpRms}
+            />
 
             {/* Shadow Mode Panel */}
             <ShadowModePanel

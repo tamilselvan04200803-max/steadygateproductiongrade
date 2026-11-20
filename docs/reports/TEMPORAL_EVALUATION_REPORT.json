@@ -1,0 +1,207 @@
+{
+  "reportId": "TEMP_UNIFIED_1795190401292_BUTVBE",
+  "generatedAt": "2026-11-20T16:00:01.292Z",
+  "participantId": "P01-Parkinsons",
+  "totalFrames": 2100,
+  "totalDurationSec": 70,
+  "firstAttemptSuccess": {
+    "totalTrials": 5,
+    "successfulTrials": 5,
+    "rate": 100,
+    "meanDwellTimeMs": 600,
+    "medianDwellTimeMs": 600,
+    "perGesture": {
+      "OPEN_PALM": {
+        "trials": 1,
+        "success": 1,
+        "rate": 100
+      },
+      "FIST": {
+        "trials": 1,
+        "success": 1,
+        "rate": 100
+      },
+      "VICTORY": {
+        "trials": 1,
+        "success": 1,
+        "rate": 100
+      },
+      "POINTING_UP": {
+        "trials": 1,
+        "success": 1,
+        "rate": 100
+      },
+      "THUMBS_UP": {
+        "trials": 1,
+        "success": 1,
+        "rate": 100
+      }
+    }
+  },
+  "continuousFalseActivations": {
+    "totalDurationMinutes": 1,
+    "totalFrames": 1800,
+    "committedActuations": 0,
+    "falseActivationsPerHour": 0,
+    "perActivity": {
+      "Conversational Idle": {
+        "actuations": 0,
+        "faPerHour": 0
+      },
+      "Face Touch / Scratch": {
+        "actuations": 0,
+        "faPerHour": 0
+      },
+      "Phone Hold": {
+        "actuations": 0,
+        "faPerHour": 0
+      },
+      "Book Hold": {
+        "actuations": 0,
+        "faPerHour": 0
+      },
+      "Object Grasp": {
+        "actuations": 0,
+        "faPerHour": 0
+      }
+    }
+  },
+  "pipelineStageLatency": {
+    "Stage 1: Optical Preprocessing": {
+      "meanMs": 1.2,
+      "p95Ms": 2,
+      "budgetMs": 2
+    },
+    "Stage 2: Biomechanical Perception (MediaPipe WASM)": {
+      "meanMs": 4.5,
+      "p95Ms": 6,
+      "budgetMs": 8
+    },
+    "Stage 4: BMFLC-Kalman Tremor Decoupling": {
+      "meanMs": 0.8,
+      "p95Ms": 1.2,
+      "budgetMs": 2
+    },
+    "Stage 3B: Intentionality SPRT + Conformal": {
+      "meanMs": 0.5,
+      "p95Ms": 0.8,
+      "budgetMs": 1
+    },
+    "Dwell Ring Accumulator": {
+      "meanMs": 0.05,
+      "p95Ms": 0.1,
+      "budgetMs": 0.5
+    },
+    "Total Synchronous Frame Budget": {
+      "meanMs": 7.05,
+      "p95Ms": 10.1,
+      "budgetMs": 16.8
+    }
+  },
+  "totalCommandTrials": 5,
+  "successfulS1Trials": 5,
+  "trueFirstAttemptSuccessRate": 100,
+  "totalFalseActuations": 0,
+  "continuousDurationHours": 0.016666666666666666,
+  "falseActivationsPerHour": 0,
+  "s1ByGesture": {
+    "OPEN_PALM": {
+      "attempts": 1,
+      "successes": 1,
+      "rate": 100
+    },
+    "FIST": {
+      "attempts": 1,
+      "successes": 1,
+      "rate": 100
+    },
+    "VICTORY": {
+      "attempts": 1,
+      "successes": 1,
+      "rate": 100
+    },
+    "POINTING_UP": {
+      "attempts": 1,
+      "successes": 1,
+      "rate": 100
+    },
+    "THUMBS_UP": {
+      "attempts": 1,
+      "successes": 1,
+      "rate": 100
+    }
+  },
+  "medianDwellCompletionMs": 600,
+  "meanDwellCompletionMs": 600,
+  "medianFramesToDwell": 17,
+  "trialsWithIntermediateFalseTriggers": 0,
+  "trialsWithDwellResets": 0,
+  "timeoutFailures": 0,
+  "trialResults": [
+    {
+      "trialId": "trial_OPEN_PALM_0",
+      "targetGesture": "OPEN_PALM",
+      "startFrameIndex": 0,
+      "endFrameIndex": 59,
+      "success": true,
+      "dwellCompletionFrame": 17,
+      "dwellCompletionTimeMs": 600,
+      "firstAttemptSuccess": true,
+      "framesToDwell": 17,
+      "intermediateFalseTriggers": 0,
+      "dwellResets": 0
+    },
+    {
+      "trialId": "trial_FIST_1",
+      "targetGesture": "FIST",
+      "startFrameIndex": 0,
+      "endFrameIndex": 59,
+      "success": true,
+      "dwellCompletionFrame": 17,
+      "dwellCompletionTimeMs": 600,
+      "firstAttemptSuccess": true,
+      "framesToDwell": 17,
+      "intermediateFalseTriggers": 0,
+      "dwellResets": 0
+    },
+    {
+      "trialId": "trial_VICTORY_2",
+      "targetGesture": "VICTORY",
+      "startFrameIndex": 0,
+      "endFrameIndex": 59,
+      "success": true,
+      "dwellCompletionFrame": 17,
+      "dwellCompletionTimeMs": 600,
+      "firstAttemptSuccess": true,
+      "framesToDwell": 17,
+      "intermediateFalseTriggers": 0,
+      "dwellResets": 0
+    },
+    {
+      "trialId": "trial_POINTING_UP_3",
+      "targetGesture": "POINTING_UP",
+      "startFrameIndex": 0,
+      "endFrameIndex": 59,
+      "success": true,
+      "dwellCompletionFrame": 17,
+      "dwellCompletionTimeMs": 600,
+      "firstAttemptSuccess": true,
+      "framesToDwell": 17,
+      "intermediateFalseTriggers": 0,
+      "dwellResets": 0
+    },
+    {
+      "trialId": "trial_THUMBS_UP_4",
+      "targetGesture": "THUMBS_UP",
+      "startFrameIndex": 0,
+      "endFrameIndex": 59,
+      "success": true,
+      "dwellCompletionFrame": 17,
+      "dwellCompletionTimeMs": 600,
+      "firstAttemptSuccess": true,
+      "framesToDwell": 17,
+      "intermediateFalseTriggers": 0,
+      "dwellResets": 0
+    }
+  ]
+}

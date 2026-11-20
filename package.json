@@ -2,6 +2,34 @@
   "name": "steadygate",
   "version": "6.0.0",
   "description": "Deterministic Tremor-Compensated Hand-Gesture Smart-Home Controller and Safety Gate",
+  "keywords": [
+    "assistive-technology",
+    "accessibility",
+    "a11y",
+    "tremor-compensation",
+    "parkinsons-disease",
+    "essential-tremor",
+    "hand-gestures",
+    "gesture-recognition",
+    "mediapipe",
+    "computer-vision",
+    "kalman-filter",
+    "smart-home",
+    "iot-controller",
+    "edge-ai",
+    "webassembly",
+    "nextjs",
+    "react",
+    "privacy-first"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/tamilselvan04200803-max/steadygateproductiongrade.git"
+  },
+  "homepage": "https://github.com/tamilselvan04200803-max/steadygateproductiongrade#readme",
+  "bugs": {
+    "url": "https://github.com/tamilselvan04200803-max/steadygateproductiongrade/issues"
+  },
   "private": true,
   "license": "Apache-2.0",
   "scripts": {
@@ -17,6 +45,7 @@
     "test:soak": "tsx tools/soak-replay.ts",
     "test:py": "py -m pytest -v",
     "test:gesture": "tsx tests/gesture-robustness.test.ts",
+    "test:webcam-eval": "tsx scripts/real-webcam-evaluation.ts",
     "test:challenger:1": "tsx tests/adversarial-challenger-1.ts",
     "test:challenger:2": "tsx tests/adversarial-challenger-2.test.ts",
     "test:global": "tsx tests/global-v4-adversarial.test.ts",

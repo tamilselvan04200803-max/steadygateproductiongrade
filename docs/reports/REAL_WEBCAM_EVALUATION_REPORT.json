@@ -1,0 +1,340 @@
+{
+  "reportId": "REP_1795190400876_BE20BZ",
+  "sessionId": "session_eval_1795190400789_4wsnu",
+  "participantId": "P01-Parkinsons",
+  "generatedAt": "2026-11-20T16:00:00.876Z",
+  "dataProvenance": "OFFLINE_HYBRID_BENCHMARK",
+  "sessionType": "INDEPENDENT_EVAL",
+  "isActuationIsolated": true,
+  "freezeMandateVerified": true,
+  "totalSamples": 436,
+  "models": {
+    "baseline": {
+      "modelId": "B0_BASELINE",
+      "modelName": "Baseline Canonical (HaGRID 17k)",
+      "accuracyPct": 84.86,
+      "macroF1": 0.897,
+      "macroPrecision": 0.975,
+      "macroRecall": 0.863,
+      "firstAttemptSuccessRate": "N/A (Static Frames)",
+      "unintendedActivationRate": 0,
+      "missedCommandRate": 19.88,
+      "medianLatencyMs": 0.03,
+      "totalTrials": 436,
+      "correctTrials": 370,
+      "perClass": {
+        "OPEN_PALM": {
+          "precision": 1,
+          "recall": 0.458,
+          "f1": 0.628,
+          "support": 107,
+          "tp": 49,
+          "fp": 0,
+          "fn": 58
+        },
+        "FIST": {
+          "precision": 0.877,
+          "recall": 1,
+          "f1": 0.934,
+          "support": 57,
+          "tp": 57,
+          "fp": 8,
+          "fn": 0
+        },
+        "VICTORY": {
+          "precision": 1,
+          "recall": 1,
+          "f1": 1,
+          "support": 56,
+          "tp": 56,
+          "fp": 0,
+          "fn": 0
+        },
+        "POINTING_UP": {
+          "precision": 1,
+          "recall": 1,
+          "f1": 1,
+          "support": 56,
+          "tp": 56,
+          "fp": 0,
+          "fn": 0
+        },
+        "THUMBS_UP": {
+          "precision": 1,
+          "recall": 0.857,
+          "f1": 0.923,
+          "support": 56,
+          "tp": 48,
+          "fp": 0,
+          "fn": 8
+        },
+        "NONE": {
+          "precision": 1,
+          "recall": 1,
+          "f1": 1,
+          "support": 104,
+          "tp": 104,
+          "fp": 0,
+          "fn": 0
+        }
+      }
+    },
+    "enrolled": {
+      "modelId": "B1_ENROLLED",
+      "modelName": "Enrolled User Profile (60s Calib)",
+      "accuracyPct": 90.6,
+      "macroF1": 0.935,
+      "macroPrecision": 0.975,
+      "macroRecall": 0.91,
+      "firstAttemptSuccessRate": "N/A (Static Frames)",
+      "unintendedActivationRate": 0,
+      "missedCommandRate": 12.35,
+      "medianLatencyMs": 0.04,
+      "totalTrials": 436,
+      "correctTrials": 395,
+      "perClass": {
+        "OPEN_PALM": {
+          "precision": 1,
+          "recall": 0.692,
+          "f1": 0.818,
+          "support": 107,
+          "tp": 74,
+          "fp": 0,
+          "fn": 33
+        },
+        "FIST": {
+          "precision": 0.877,
+          "recall": 1,
+          "f1": 0.934,
+          "support": 57,
+          "tp": 57,
+          "fp": 8,
+          "fn": 0
+        },
+        "VICTORY": {
+          "precision": 1,
+          "recall": 1,
+          "f1": 1,
+          "support": 56,
+          "tp": 56,
+          "fp": 0,
+          "fn": 0
+        },
+        "POINTING_UP": {
+          "precision": 1,
+          "recall": 1,
+          "f1": 1,
+          "support": 56,
+          "tp": 56,
+          "fp": 0,
+          "fn": 0
+        },
+        "THUMBS_UP": {
+          "precision": 1,
+          "recall": 0.857,
+          "f1": 0.923,
+          "support": 56,
+          "tp": 48,
+          "fp": 0,
+          "fn": 8
+        },
+        "NONE": {
+          "precision": 0.806,
+          "recall": 1,
+          "f1": 0.893,
+          "support": 104,
+          "tp": 104,
+          "fp": 25,
+          "fn": 0
+        }
+      }
+    },
+    "adminTrained": {
+      "modelId": "B2_ADMIN_TRAINED",
+      "modelName": "Admin-Trained (Centroids + Negatives)",
+      "accuracyPct": 84.86,
+      "macroF1": 0.897,
+      "macroPrecision": 0.975,
+      "macroRecall": 0.863,
+      "firstAttemptSuccessRate": "N/A (Static Frames)",
+      "unintendedActivationRate": 0,
+      "missedCommandRate": 19.88,
+      "medianLatencyMs": 0.03,
+      "totalTrials": 436,
+      "correctTrials": 370,
+      "perClass": {
+        "OPEN_PALM": {
+          "precision": 1,
+          "recall": 0.458,
+          "f1": 0.628,
+          "support": 107,
+          "tp": 49,
+          "fp": 0,
+          "fn": 58
+        },
+        "FIST": {
+          "precision": 0.877,
+          "recall": 1,
+          "f1": 0.934,
+          "support": 57,
+          "tp": 57,
+          "fp": 8,
+          "fn": 0
+        },
+        "VICTORY": {
+          "precision": 1,
+          "recall": 1,
+          "f1": 1,
+          "support": 56,
+          "tp": 56,
+          "fp": 0,
+          "fn": 0
+        },
+        "POINTING_UP": {
+          "precision": 1,
+          "recall": 1,
+          "f1": 1,
+          "support": 56,
+          "tp": 56,
+          "fp": 0,
+          "fn": 0
+        },
+        "THUMBS_UP": {
+          "precision": 1,
+          "recall": 0.857,
+          "f1": 0.923,
+          "support": 56,
+          "tp": 48,
+          "fp": 0,
+          "fn": 8
+        },
+        "NONE": {
+          "precision": 1,
+          "recall": 1,
+          "f1": 1,
+          "support": 104,
+          "tp": 104,
+          "fp": 0,
+          "fn": 0
+        }
+      }
+    }
+  },
+  "deltas": {
+    "enrolledVsBaseline": {
+      "macroF1": 0.038,
+      "firstAttemptSuccess": 0,
+      "medianLatencyMs": 0.01,
+      "unintendedActivationRate": 0
+    },
+    "adminVsBaseline": {
+      "macroF1": 0,
+      "firstAttemptSuccess": 0,
+      "medianLatencyMs": 0,
+      "unintendedActivationRate": 0
+    }
+  },
+  "stressMatrix": {
+    "lighting": {
+      "NORMAL_DIFFUSE": {
+        "baselineF1": 0.834,
+        "enrolledF1": 0.903,
+        "adminF1": 0.834,
+        "support": 336
+      },
+      "LOW_LIGHT": {
+        "baselineF1": 1,
+        "enrolledF1": 1,
+        "adminF1": 1,
+        "support": 50
+      },
+      "GLARE": {
+        "baselineF1": 1,
+        "enrolledF1": 1,
+        "adminF1": 1,
+        "support": 50
+      }
+    },
+    "visibility": {
+      "FULL_VISIBILITY": {
+        "baselineF1": 0.906,
+        "enrolledF1": 0.955,
+        "adminF1": 0.906,
+        "support": 396
+      },
+      "PARTIAL_OCCLUSION": {
+        "baselineF1": 0.75,
+        "enrolledF1": 0.75,
+        "adminF1": 0.75,
+        "support": 40
+      },
+      "TRACKING_DROPOUT": {
+        "baselineF1": 0,
+        "enrolledF1": 0,
+        "adminF1": 0,
+        "support": 0
+      }
+    },
+    "movement": {
+      "NOMINAL": {
+        "baselineF1": 0.966,
+        "enrolledF1": 0.966,
+        "adminF1": 0.966,
+        "support": 346
+      },
+      "REST_TREMOR": {
+        "baselineF1": 1,
+        "enrolledF1": 1,
+        "adminF1": 1,
+        "support": 40
+      },
+      "KINETIC_TREMOR": {
+        "baselineF1": 0,
+        "enrolledF1": 0,
+        "adminF1": 0,
+        "support": 0
+      },
+      "CONTRACTURE_ROM": {
+        "baselineF1": 0,
+        "enrolledF1": 0.667,
+        "adminF1": 0,
+        "support": 50
+      },
+      "SLOW_SWEEP": {
+        "baselineF1": 0,
+        "enrolledF1": 0,
+        "adminF1": 0,
+        "support": 0
+      }
+    }
+  },
+  "negativeHoldRejection": {
+    "totalNegativeSamples": 104,
+    "baselineBlocked": 104,
+    "enrolledBlocked": 104,
+    "adminBlocked": 104,
+    "baselineFarPct": 0,
+    "enrolledFarPct": 0,
+    "adminFarPct": 0
+  },
+  "limitations": [
+    "Synthetic simulation trials model physics and kinematics, not true multi-path ambient reflectance.",
+    "Internal actuation latency (0.04-0.88ms) excludes hardware webcam exposure and MediaPipe GPU-to-CPU transfer (~14ms).",
+    "Personalized contracture centroids provide ceiling-breaking F1 on OPEN_PALM but require 60s user calibration.",
+    "Negative object grasp rejection requires at least 40% palm visibility; extreme total occlusion defaults to UNKNOWN.",
+    "Candidate models remain isolated in shadow mode and cannot actuate physical appliances without explicit promotion.",
+    "First-Attempt Success (S₁) is a temporal dwell metric requiring live streaming; marked N/A on static independent frames.",
+    "Negative rejection (104/104) measures geometric guard rule coverage on synthetic poses, not continuous hourly false activation rate (FA/hr)."
+  ],
+  "sessionIndependenceAudit": {
+    "enrolmentSessionHash": "OFFLINE_BENCHMARK_NO_SESSION",
+    "evaluationSessionHash": "OFFLINE_BENCHMARK_NO_SESSION",
+    "enrolmentFrameHashes": [],
+    "evaluationFrameHashes": [],
+    "overlapCount": 0,
+    "enrolmentSampleCount": 0,
+    "evaluationSampleCount": 0,
+    "isIndependent": true,
+    "auditPassed": true
+  }
+}
