@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-10-17T06:45:17.338Z",
+  "updatedAt": "2026-11-18T11:51:26.030Z",
   "appliances": [
     {
       "id": "lamp_desk",
@@ -46,28 +46,6 @@
       "updatedAt": "2026-10-17T06:42:20.343Z"
     },
     {
-      "id": "fan_table",
-      "name": "Study Turbo Breeze Fan",
-      "category": "Climate",
-      "riskTier": "R0",
-      "powerState": "ON",
-      "targetValue": 2,
-      "unit": "Speed",
-      "location": "Study Room",
-      "requiresHandshake": false,
-      "hazardDescription": "4-speed aerodynamic bladeless/guarded fan. Real-time air speed & RPM control.",
-      "iconName": "Fan",
-      "fanSpeed": 2,
-      "temperature": 23.5,
-      "airRpm": 940,
-      "airflowCfm": 280,
-      "brightness": 0,
-      "activeWattage": 34,
-      "espPin": 27,
-      "mqttTopic": "home/study/fan",
-      "updatedAt": "2026-10-17T06:42:47.258Z"
-    },
-    {
       "id": "heater_radiant",
       "name": "Radiant Quartz Space Heater",
       "category": "Heating",
@@ -88,6 +66,28 @@
       "espPin": 5,
       "mqttTopic": "home/bedroom/heater",
       "updatedAt": "2026-10-17T06:45:17.327Z"
+    },
+    {
+      "id": "fan_table",
+      "name": "Study Turbo Breeze Fan",
+      "category": "Climate",
+      "riskTier": "R0",
+      "powerState": "ON",
+      "targetValue": 2,
+      "unit": "Speed",
+      "location": "Study Room",
+      "requiresHandshake": false,
+      "hazardDescription": "4-speed aerodynamic bladeless/guarded fan. Real-time air speed & RPM control.",
+      "iconName": "Fan",
+      "fanSpeed": 2,
+      "temperature": 23.5,
+      "airRpm": 940,
+      "airflowCfm": 280,
+      "brightness": 0,
+      "activeWattage": 34,
+      "espPin": 27,
+      "mqttTopic": "home/study/fan",
+      "updatedAt": "2026-11-18T11:21:42.042Z"
     },
     {
       "id": "geyser_bath",

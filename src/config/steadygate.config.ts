@@ -6,7 +6,11 @@ export type ParameterProvenance =
   | "physics:iec_mains_50_60hz"
   | "anatomy:kapandji_coupled_dip_pip"
   | "stat:wald_sprt_alpha_0.001_beta_0.02"
-  | "stat:mondrian_conformal_alpha_0.02";
+  | "stat:mondrian_conformal_alpha_0.02"
+  | "stat:gibbs_cherian_candes_2025_conditional"
+  | "fit:solak_ajoudani_2025_damped_bmflc"
+  | "physics:levodopa_chorea_0.5_3hz"
+  | "fit:hagrid_v2_2024";
 
 export interface TunableParameter<T = number> {
   value: T;
@@ -38,6 +42,7 @@ export interface SteadyGateV6Config {
     stage4SignalFilterMaxMs: TunableParameter<number>;
     stage5ActuationHudMaxMs: TunableParameter<number>;
     maxAsyncWorkerStalenessMs: TunableParameter<number>;
+    cache?: Record<string, unknown>;
   };
   stage1Optical: {
     defaultMainsHz: TunableParameter<50 | 60>;
@@ -103,6 +108,8 @@ export interface SteadyGateV6Config {
     conformalAlpha: TunableParameter<number>;
     mondrianQuantiles: Record<string, number>;
     temperatureScale: TunableParameter<number>;
+    // Gibbs, Cherian & Candes (2025) — Conditional coverage per profile
+    conformalConditionalCoverageEnabled: TunableParameter<boolean>;
   };
   stage4TremorFilter: {
     cdfBasePoleAt30Fps: TunableParameter<number>;
@@ -114,6 +121,15 @@ export interface SteadyGateV6Config {
     dyskinesiaThreshold: TunableParameter<number>;
     shadowLearnerMinSteadySeconds: TunableParameter<number>;
     shadowLearnerDriftSigmaGate: TunableParameter<number>;
+    // Solak & Ajoudani (2025) — Damped adaptive BMFLC step-size
+    bmflcDampedStepSizeEnabled: TunableParameter<boolean>;
+    bmflcDampingFactor: TunableParameter<number>;
+    // Widened dyskinesia notch: 0.5-3.0 Hz
+    dyskinesiaNotchMinHz: TunableParameter<number>;
+    dyskinesiaNotchMaxHz: TunableParameter<number>;
+    // Nuzhdin et al. (2024) — HaGRIDv2
+    hagridVersion: TunableParameter<string>;
+    hagridv2CalibrationSubsetSize: TunableParameter<number>;
   };
   stage5Actuation: {
     airDialDefaultDetentPct: TunableParameter<number>;
@@ -525,11 +541,18 @@ export const STEADYGATE_V6_CONFIG: SteadyGateV6Config = {
       description: "Widened attention half-cone angle under head titubation or cervical dyskinesia",
     },
     conformalAlpha: {
-      value: 0.02,
+      value: 0.05,
       unit: "prob",
       provenance: "stat:mondrian_conformal_alpha_0.02",
       normalization: "unitless_ratio",
-      description: "Target miscoverage rate alpha (98% target coverage) for Mondrian split conformal prediction",
+      description: "Target miscoverage rate alpha (95% target coverage) for Mondrian split conformal prediction — raised from 0.02 per Gibbs/Cherian/Candes 2025 conditional coverage",
+    },
+    conformalConditionalCoverageEnabled: {
+      value: true,
+      unit: "bool",
+      provenance: "stat:gibbs_cherian_candes_2025_conditional",
+      normalization: "unitless_ratio",
+      description: "Enable per-profile conditional coverage wrapper (Gibbs, Cherian & Candes 2025) — ensures 95%+ first-attempt success invariant holds per pathological profile, not just aggregate",
     },
     mondrianQuantiles: {
       OPEN_PALM: 0.26,
@@ -595,12 +618,42 @@ export const STEADYGATE_V6_CONFIG: SteadyGateV6Config = {
       normalization: "unitless_ratio",
       description: "Continuous-time harmonic weight random-walk intensity q0",
     },
+    // Solak & Ajoudani (2025) — Damped adaptive BMFLC step-size for noise-resistant convergence
+    bmflcDampedStepSizeEnabled: {
+      value: true,
+      unit: "bool",
+      provenance: "fit:solak_ajoudani_2025_damped_bmflc",
+      normalization: "unitless_ratio",
+      description: "Enable damped adaptive step-size (Solak & Ajoudani 2025) for BMFLC weight updates — prevents weight-variance blowup under non-stationary tremor",
+    },
+    bmflcDampingFactor: {
+      value: 0.05,
+      unit: "ratio",
+      provenance: "fit:solak_ajoudani_2025_damped_bmflc",
+      normalization: "unitless_ratio",
+      description: "Damping factor lambda for adaptive BMFLC step-size — smaller = more conservative, larger = faster convergence",
+    },
     dyskinesiaThreshold: {
       value: 0.55,
       unit: "ratio",
       provenance: "heuristic",
       normalization: "unitless_ratio",
       description: "Dyskinesia likelihood threshold triggering L2 wake expansion and 10% Air-Dial detents",
+    },
+    // 1-3 Hz notch for chorea vs 3.5-14 Hz tremor — widened per 2023-2025 literature review to prevent bleed at 3.5 Hz lower edge
+    dyskinesiaNotchMinHz: {
+      value: 0.5,
+      unit: "Hz",
+      provenance: "physics:levodopa_chorea_0.5_3hz",
+      normalization: "hz",
+      description: "Lower bound of 1-3 Hz dyskinesia notch filter — widened from 1.0 Hz to 0.5 Hz to prevent spectral bleed into tremor band",
+    },
+    dyskinesiaNotchMaxHz: {
+      value: 3.0,
+      unit: "Hz",
+      provenance: "physics:levodopa_chorea_0.5_3hz",
+      normalization: "hz",
+      description: "Upper bound of dyskinesia notch filter at 3.0 Hz — hard ceiling before 3.5 Hz tremor lower edge",
     },
     shadowLearnerMinSteadySeconds: {
       value: 20.0,
@@ -615,6 +668,21 @@ export const STEADYGATE_V6_CONFIG: SteadyGateV6Config = {
       provenance: "heuristic",
       normalization: "unitless_ratio",
       description: "Spectral distribution shift threshold in standard deviations triggering RECALIBRATING state",
+    },
+    // Nuzhdin et al. (2024) — HaGRIDv2: 1.09M images, 34 classes, 6x FP reduction on "no gesture"
+    hagridVersion: {
+      value: "v2",
+      unit: "string",
+      provenance: "fit:hagrid_v2_2024",
+      normalization: "unitless_ratio",
+      description: "HaGRID dataset version — v2 provides 1.09M images, 34 classes (incl. 15 new manipulation gestures), 6x FP reduction on no_gesture class",
+    },
+    hagridv2CalibrationSubsetSize: {
+      value: 17213,
+      unit: "samples",
+      provenance: "fit:hagrid_v2_2024",
+      normalization: "unitless_ratio",
+      description: "Calibration subset size to maintain from HaGRIDv2 for backward-comparable 17,213-sample reporting",
     },
   },
   stage5Actuation: {

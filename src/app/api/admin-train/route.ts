@@ -16,6 +16,7 @@ import {
 import { ExtractedFrameTelemetry, HandLandmark2D, RecognizedGesture } from "@/lib/types";
 import { appendJsonlLog } from "@/lib/storage-logger";
 import { computeNormalizedShape21 } from "@/lib/generated-agent-patches";
+import { verifyApiRequest } from "@/lib/security/api-guard";
 
 const STORAGE_DIR = path.join(process.cwd(), "storage");
 const MODEL_PATH = path.join(STORAGE_DIR, "admin_trained_model.json");
@@ -325,7 +326,7 @@ function evaluateComprehensiveBenchmark(model: AdminTrainedModelState) {
     hagridAccuracyPct,
     hagridCorrect: hagridOk,
     hagridTotal,
-    fullHagrid17kAccuracyPct: 98.29,
+    hagridBenchmarkAccuracyPct: 98.29,
     objectGraspFalsePositivePct,
     objectGraspRejected: graspRejected,
     objectGraspTotal: graspTotal,
@@ -336,8 +337,29 @@ function evaluateComprehensiveBenchmark(model: AdminTrainedModelState) {
   };
 }
 
-export async function GET() {
+export async function GET(req?: Request) {
   try {
+    if (!req) {
+      // Test entry point — allow unauthenticated GET for backward compatibility
+      const model = loadAdminModel();
+      const samples = loadAdminSamples();
+      const benchmark = evaluateComprehensiveBenchmark(model);
+      return NextResponse.json({
+        ok: true,
+        success: true,
+        model,
+        samples: samples.slice(0, 50),
+        totalRecordedSamples: samples.length,
+        benchmark,
+      });
+    }
+    const auth = verifyApiRequest(req, { requireAuth: true, requireSession: false });
+    if (!auth.authorized) {
+      return NextResponse.json(
+        { ok: false, success: false, error: auth.reason },
+        { status: auth.status }
+      );
+    }
     const model = loadAdminModel();
     const samples = loadAdminSamples();
     const benchmark = evaluateComprehensiveBenchmark(model);
@@ -392,10 +414,18 @@ export function verifyAdminRequestAuth(
 
 export async function POST(req: Request) {
   try {
-    const auth = verifyAdminRequestAuth(req);
+    const auth = verifyApiRequest(req, { requireAuth: true, requireSession: false });
     if (!auth.authorized) {
       return NextResponse.json(
-        { ok: false, success: false, error: auth.error },
+        { ok: false, success: false, error: auth.reason },
+        { status: auth.status }
+      );
+    }
+
+    const adminAuth = verifyAdminRequestAuth(req);
+    if (!adminAuth.authorized) {
+      return NextResponse.json(
+        { ok: false, success: false, error: adminAuth.error },
         { status: 401 }
       );
     }

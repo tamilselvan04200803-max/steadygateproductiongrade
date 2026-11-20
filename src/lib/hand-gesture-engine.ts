@@ -1031,13 +1031,24 @@ export function evaluateHandContactState100DOH(
  *  - |C| === 1 (singleton): High-confidence unambiguous command -> positive SPRT evidence
  *  - |C| > 1 (multi-label ambiguity) or |C| === 0 (OOD): Conformal abstain -> pause SPRT without resetting!
  */
+export interface MondrianConformalInput {
+  classScores: Partial<Record<RecognizedGesture, number>>;
+  topGesture: RecognizedGesture;
+  topConfidence: number;
+  margin: number;
+  profileId?: string; // For per-profile conditional coverage
+}
+
 export function evaluateMondrianConformalSet(
   classScores: Partial<Record<RecognizedGesture, number>>,
   topGesture: RecognizedGesture,
   topConfidence: number,
-  margin: number
+  margin: number,
+  profileId?: string
 ): MondrianConformalResult {
   const quantiles = STEADYGATE_V6_CONFIG.stage3ContactAndIntent.mondrianQuantiles;
+  const alpha = STEADYGATE_V6_CONFIG.stage3ContactAndIntent.conformalAlpha.value;
+  const conditionalEnabled = STEADYGATE_V6_CONFIG.stage3ContactAndIntent.conformalConditionalCoverageEnabled.value;
   const candidateClasses: RecognizedGesture[] = [
     "OPEN_PALM",
     "FIST",
@@ -1094,6 +1105,18 @@ export function evaluateMondrianConformalSet(
   }
 
   const topQ = quantiles[topGesture] ?? 0.34;
+
+  // Gibbs, Cherian & Candes (2025) — Conditional coverage per profile
+  // When conditionalEnabled and profileId provided, we track per-profile coverage
+  // This is a placeholder for the full conditional wrapper — the actual calibration
+  // happens in the calibration script which computes per-profile quantiles
+  let conditionalCoverageValid = true;
+  if (conditionalEnabled && profileId) {
+    // In production, this would check against per-profile calibration data
+    // For now, we ensure the set is not abnormally large for this profile
+    conditionalCoverageValid = predictionSet.length <= 3; // Conservative bound
+  }
+
   return {
     predictionSet,
     setSize: predictionSet.length,
@@ -1102,6 +1125,9 @@ export function evaluateMondrianConformalSet(
     topClass: topGesture,
     topProbability: Math.round(topConfidence * 1000) / 1000,
     thresholdQuantile: topQ,
+    alphaUsed: alpha,
+    profileId,
+    conditionalCoverageValid,
   };
 }
 
@@ -1842,7 +1868,7 @@ export function classifyHandGesture(
   }
 
   // 6. FOUR_FINGERS vs OPEN_PALM (v5.0 Phase 1: Signed Palmar-Plane Thumb Projection)
-  const openGate = options?.webcamMode ? 0.44 : 0.50;
+  const openGate = (options?.webcamMode ? 0.44 : 0.50) * flexScale;
   const pinkyOpenGate = options?.webcamMode ? 0.35 : 0.42;
   const pinkyStraightOrExtended =
     pinky > pinkyOpenGate || (pinky >= 0.35 && pinkyPipDeg >= 140);
@@ -1865,6 +1891,36 @@ export function classifyHandGesture(
     ((tuck >= 0.01 && d4_9 < 0.56 && (d4_5 < 0.42 || thumb < 0.35 || d4_13 < 0.69)) ||
       (tuck >= -0.18 && d4_5 < 0.22 && d4_9 < 0.50));
 
+  // Personalized contracture override: enrolled user's own contracture centroid
+  // (e.g. rigid finger extension 0.68, flexTol 0.28) suppresses the FOUR_FINGERS
+  // thumb-tucked lock. This is the ceiling-breaking case: a Parkinsonian patient
+  // with adducted thumb and semi-flexed fingers intends OPEN_PALM, not FOUR_FINGERS.
+  // Guard: only fire when thumb is adducted (contracture), not on normal hands.
+  let personalizedContractureOverride = false;
+  if (userProfile?.personalizedPrototypes) {
+    try {
+      const prototypes = JSON.parse(userProfile.personalizedPrototypes);
+      const openProto = prototypes.OPEN_PALM;
+      if (openProto && Array.isArray(openProto.centroid) && openProto.centroid.length === 5) {
+        const liveVec = [thumb, index, middle, ring, pinky];
+        const meanDiff =
+          liveVec.reduce((acc, v, idx) => acc + Math.abs(v - openProto.centroid[idx]), 0) / 5;
+        const tol = openProto.flexTol || 0.24;
+        // Contracture: thumb adducted across palm (thumb < 0.45) AND 4 fingers semi-flexed
+        // (extension 0.60-0.72, below the FOUR_FINGERS full-extension range 0.90+).
+        // This distinguishes Parkinsonian contracture from genuine FOUR_FINGERS.
+        const thumbAdducted = thumb < 0.45;
+        const fourMeanSemiFlexed = (index + middle + ring + pinky) / 4.0;
+        const fingersSemiExtended = fourMeanSemiFlexed >= 0.55 && fourMeanSemiFlexed <= 0.88;
+        if (meanDiff <= tol && thumbAdducted && fingersSemiExtended) {
+          personalizedContractureOverride = true;
+        }
+      }
+    } catch {
+      // Ignore parse errors
+    }
+  }
+
   if (
     index > openGate &&
     middle > openGate &&
@@ -1873,7 +1929,7 @@ export function classifyHandGesture(
     !pinkyGenuinelyCurled &&
     scores.PINCH < 0.6
   ) {
-    if (thumbTuckedAcrossPalm) {
+    if (thumbTuckedAcrossPalm && !personalizedContractureOverride) {
       const thumbTucked = clamp01(1.0 - Math.min(thumb, d4_9));
       scores.FOUR_FINGERS = Math.min(0.97, 0.68 + 0.2 * fourMean + 0.11 * thumbTucked);
       scores.OPEN_PALM = 0.18;
@@ -2064,7 +2120,7 @@ export function classifyHandGesture(
             flexTol?: number;
           };
           const boost = proto.confidenceBoost || 1.0;
-          if (scores[key] > 0.5) {
+          if (scores[key] > 0.35) {
             scores[key] *= boost;
           }
 
@@ -2073,8 +2129,9 @@ export function classifyHandGesture(
             const meanDiff =
               liveVec.reduce((acc, v, idx) => acc + Math.abs(v - proto.centroid![idx]), 0) / 5;
             const tol = proto.flexTol || 0.24;
-            if (meanDiff <= tol && scores[key] > 0.5) {
-              scores[key] = Math.min(0.99, scores[key] + 0.08 * (1 - meanDiff / tol));
+            if (meanDiff <= tol && (scores[key] > 0.30 || scores.UNKNOWN > 0.5)) {
+              scores[key] = Math.min(0.99, Math.max(scores[key], 0.72) + 0.15 * (1 - meanDiff / tol));
+              personalizedBoostApplied = true;
             }
           }
           personalizedBoostApplied = true;

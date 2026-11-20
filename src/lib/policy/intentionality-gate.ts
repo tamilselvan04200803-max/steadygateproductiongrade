@@ -444,11 +444,13 @@ export class IntentionalityEnsembleEngine {
     const topGesture = input.resolvedGesture ?? "OPEN_PALM";
     const topConf = input.classifierConfidence ?? (coreFourPass ? 0.94 : 0.45);
     const topMargin = input.classifierMargin ?? (coreFourPass ? 0.82 : 0.12);
+    const profileId = input.hazardTier ? `hazard_${input.hazardTier}` : "default";
     const conformal = evaluateMondrianConformalSet(
       input.classProbabilities ?? {},
       topGesture,
       topConf,
-      topMargin
+      topMargin,
+      profileId
     );
 
     const l5ConformalScore = conformal.isSingleton ? 1.0 : conformal.setSize > 1 ? 0.45 : 0.0;

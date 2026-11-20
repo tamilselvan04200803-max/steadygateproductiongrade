@@ -1,1 +1,585 @@
 @import "tailwindcss";
+
+/* ============================================================================
+   STEADYGATE v6.0 — CLINICAL DESIGN SYSTEM
+   Distinctive visual identity for motor-disorder assistive technology
+   ============================================================================ */
+
+/* ---- Color Palette: Clinical Trust + Calm Focus ---- */
+/* Base: Deep slate for reduced glare in low-light clinical environments
+   Accent: Cyan-teal for "steady" signal state (not arbitrary brand color)
+   Alert: Amber for attention-required (not error red — this is assistive, not critical)
+   Success: Emerald for confirmed intent (distinct from alert)
+   Hazard: Rose only for Tier 3 thermal appliances (high-amperage safety) */
+
+:root {
+  /* Base surfaces — low luminance for dark clinical environments */
+  --sg-bg-deep: #020617;      /* slate-950 — primary background */
+  --sg-bg-panel: #0f172a;     /* slate-900 — panel/card background */
+  --sg-bg-elevated: #1e293b;  /* slate-800 — elevated/modal background */
+  --sg-border: #334155;       /* slate-700 — subtle borders */
+  --sg-border-strong: #475569; /* slate-600 — focus/active borders */
+
+  /* Text hierarchy — high contrast for accessibility */
+  --sg-text-primary: #f8fafc;   /* slate-50 — primary text */
+  --sg-text-secondary: #cbd5e1; /* slate-300 — secondary text */
+  --sg-text-muted: #94a3b8;     /* slate-400 — labels/muted */
+  --sg-text-disabled: #64748b;  /* slate-500 — disabled */
+
+  /* Signal accents — semantic, not decorative */
+  --sg-signal-steady: #06b6d4;   /* cyan-500 — tremor-filtered, locked, "steady" state */
+  --sg-signal-steady-dim: #0891b2; /* cyan-600 — hover/active */
+  --sg-signal-steady-bg: #164e63;  /* cyan-900/30 — background wash */
+  --sg-signal-attention: #f59e0b;  /* amber-500 — attention needed, not error */
+  --sg-signal-attention-bg: #78350f; /* amber-900/30 */
+  --sg-signal-confirm: #22c55e;    /* emerald-500 — intent confirmed, actuation ready */
+  --sg-signal-confirm-bg: #064e3b; /* emerald-900/30 */
+  --sg-signal-hazard: #f43f5e;     /* rose-500 — Tier 3 thermal hazard ONLY */
+  --sg-signal-hazard-bg: #7f1d1d;  /* rose-900/30 */
+
+  /* Tremor spectrum colors — scientific visualization */
+  --sg-tremor-notch: #a855f7;      /* purple-500 — personalized notch filter band */
+  --sg-tremor-peak: #ec4899;       /* pink-500 — dominant tremor peak f0 */
+  --sg-tremor-harmonic: #38bdf8;   /* cyan-400 — harmonic content */
+  --sg-tremor-noise: #94a3b8;      /* slate-400 — broadband noise */
+
+  /* Focus ring — visible but not aggressive */
+  --sg-focus-ring: #06b6d4;        /* cyan-500 */
+  --sg-focus-ring-offset: #020617; /* slate-950 */
+
+  /* Typography scale — clinical monospace for data, humanist for UI */
+  --sg-font-mono: 'JetBrains Mono', 'SF Mono', 'Fira Code', monospace;
+  --sg-font-ui: 'Inter', system-ui, -apple-system, sans-serif;
+
+  /* Spacing rhythm — 4px base unit */
+  --sg-space-1: 4px;
+  --sg-space-2: 8px;
+  --sg-space-3: 12px;
+  --sg-space-4: 16px;
+  --sg-space-5: 20px;
+  --sg-space-6: 24px;
+  --sg-space-8: 32px;
+
+  /* Border radius — subtle, not pill-shaped everything */
+  --sg-radius-sm: 4px;
+  --sg-radius-md: 8px;
+  --sg-radius-lg: 12px;
+  --sg-radius-xl: 16px;
+
+  /* Shadows — depth for hierarchy, not decoration */
+  --sg-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
+  --sg-shadow-md: 0 4px 12px rgba(0, 0, 0, 0.4);
+  --sg-shadow-lg: 0 12px 24px rgba(0, 0, 0, 0.5);
+  --sg-shadow-glow: 0 0 24px rgba(6, 182, 212, 0.15); /* cyan glow for "steady" */
+
+  /* Transitions — respect reduced-motion */
+  --sg-transition-fast: 80ms ease-out;
+  --sg-transition-normal: 160ms ease-out;
+  --sg-transition-slow: 240ms ease-out;
+}
+
+/* ---- Reduced Motion ---- */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* ---- High Contrast Mode ---- */
+@media (prefers-contrast: high) {
+  :root {
+    --sg-border: #64748b;
+    --sg-border-strong: #94a3b8;
+    --sg-text-secondary: #e2e8f0;
+    --sg-text-muted: #cbd5e1;
+  }
+}
+
+/* ---- Base Reset ---- */
+* {
+  box-sizing: border-box;
+}
+
+html {
+  font-family: var(--sg-font-ui);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  background: var(--sg-bg-deep);
+  color: var(--sg-text-primary);
+  font-size: 14px;
+  line-height: 1.5;
+  min-height: 100vh;
+}
+
+/* ---- Monospace utility for data ---- */
+.font-mono {
+  font-family: var(--sg-font-mono);
+}
+
+/* ---- Focus visible ---- */
+:focus-visible {
+  outline: none;
+  ring: 2px solid var(--sg-focus-ring);
+  ring-offset: 2px;
+  ring-offset-color: var(--sg-focus-ring-offset);
+}
+
+/* ---- Scrollbar ---- */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: var(--sg-bg-deep);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--sg-border);
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--sg-border-strong);
+}
+
+/* ---- Selection ---- */
+::selection {
+  background: var(--sg-signal-steady);
+  color: var(--sg-bg-deep);
+}
+
+/* ---- Component primitives as standard CSS classes ---- */
+
+/* Panel — the base container for all UI sections */
+.sg-panel {
+  background: var(--sg-bg-panel);
+  border: 1px solid var(--sg-border);
+  border-radius: var(--sg-radius-lg);
+  box-shadow: var(--sg-shadow-sm);
+}
+
+.sg-panel-elevated {
+  background: var(--sg-bg-elevated);
+  border: 1px solid var(--sg-border-strong);
+  border-radius: var(--sg-radius-xl);
+  box-shadow: var(--sg-shadow-md);
+}
+
+/* Signal badges — semantic state indicators */
+.sg-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  border-radius: 9999px;
+  font-size: 10px;
+  font-weight: 700;
+  font-family: var(--sg-font-mono);
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
+
+.sg-badge-steady {
+  background: var(--sg-signal-steady-bg);
+  color: var(--sg-signal-steady);
+  border: 1px solid rgba(6, 182, 212, 0.4);
+}
+
+.sg-badge-attention {
+  background: var(--sg-signal-attention-bg);
+  color: var(--sg-signal-attention);
+  border: 1px solid rgba(245, 158, 11, 0.4);
+}
+
+.sg-badge-confirm {
+  background: var(--sg-signal-confirm-bg);
+  color: var(--sg-signal-confirm);
+  border: 1px solid rgba(34, 197, 94, 0.4);
+}
+
+.sg-badge-hazard {
+  background: var(--sg-signal-hazard-bg);
+  color: var(--sg-signal-hazard);
+  border: 1px solid rgba(244, 63, 94, 0.4);
+}
+
+/* Buttons — clear hierarchy: Primary (steady) > Secondary (confirm) > Ghost > Hazard */
+.sg-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 8px 16px;
+  border-radius: var(--sg-radius-md);
+  font-size: 12px;
+  font-weight: 600;
+  font-family: var(--sg-font-mono);
+  transition: all var(--sg-transition-fast);
+  cursor: pointer;
+  border: 1px solid transparent;
+}
+
+.sg-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.sg-btn-primary {
+  background: var(--sg-signal-steady);
+  color: var(--sg-bg-deep);
+  border-color: var(--sg-signal-steady-dim);
+  box-shadow: var(--sg-shadow-sm);
+}
+
+.sg-btn-primary:hover:not(:disabled) {
+  background: var(--sg-signal-steady-dim);
+  box-shadow: var(--sg-shadow-glow);
+}
+
+.sg-btn-confirm {
+  background: var(--sg-signal-confirm);
+  color: var(--sg-bg-deep);
+  border-color: #16a34a;
+}
+
+.sg-btn-confirm:hover:not(:disabled) {
+  background: #16a34a;
+  box-shadow: 0 0 16px rgba(34, 197, 94, 0.2);
+}
+
+.sg-btn-hazard {
+  background: var(--sg-signal-hazard);
+  color: white;
+  border-color: #e11d48;
+}
+
+.sg-btn-hazard:hover:not(:disabled) {
+  background: #e11d48;
+  box-shadow: 0 0 16px rgba(244, 63, 94, 0.2);
+}
+
+.sg-btn-ghost {
+  background: transparent;
+  color: var(--sg-text-secondary);
+  border-color: var(--sg-border);
+}
+
+.sg-btn-ghost:hover:not(:disabled) {
+  background: var(--sg-bg-elevated);
+  color: var(--sg-text-primary);
+  border-color: var(--sg-border-strong);
+}
+
+.sg-btn-sm {
+  padding: 6px 12px;
+  font-size: 11px;
+}
+
+/* Progress ring — for dwell gate visualization */
+.sg-progress-ring {
+  transform: rotate(-90deg);
+}
+
+.sg-progress-ring-bg {
+  fill: none;
+  stroke: var(--sg-border);
+  stroke-width: 6;
+}
+
+.sg-progress-ring-fill {
+  fill: none;
+  stroke-width: 6;
+  stroke-linecap: round;
+  transition: stroke-dashoffset var(--sg-transition-fast);
+}
+
+/* KPI metric display */
+.sg-metric {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.sg-metric-label {
+  font-size: 9px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--sg-text-muted);
+  font-family: var(--sg-font-mono);
+}
+
+.sg-metric-value {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--sg-text-primary);
+  font-family: var(--sg-font-mono);
+  line-height: 1.1;
+}
+
+.sg-metric-sub {
+  font-size: 10px;
+  color: var(--sg-text-muted);
+  font-family: var(--sg-font-mono);
+}
+
+/* Data table */
+.sg-table {
+  width: 100%;
+  font-size: 11px;
+  font-family: var(--sg-font-mono);
+  border-collapse: collapse;
+}
+
+.sg-table th {
+  text-align: left;
+  padding: 8px 10px;
+  font-size: 9px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--sg-text-muted);
+  border-bottom: 1px solid var(--sg-border);
+  background: var(--sg-bg-deep);
+}
+
+.sg-table td {
+  padding: 6px 10px;
+  color: var(--sg-text-secondary);
+  border-bottom: 1px solid var(--sg-border);
+}
+
+.sg-table tr:hover td {
+  background: rgba(6, 182, 212, 0.03);
+}
+
+/* Form controls */
+.sg-input {
+  width: 100%;
+  background: var(--sg-bg-deep);
+  border: 1px solid var(--sg-border);
+  border-radius: var(--sg-radius-sm);
+  padding: 8px 10px;
+  font-size: 12px;
+  color: var(--sg-text-primary);
+  font-family: var(--sg-font-mono);
+  transition: border-color var(--sg-transition-fast), box-shadow var(--sg-transition-fast);
+}
+
+.sg-input:focus {
+  outline: none;
+  border-color: var(--sg-focus-ring);
+  box-shadow: 0 0 0 2px rgba(6, 182, 212, 0.2);
+}
+
+.sg-input::placeholder {
+  color: var(--sg-text-disabled);
+}
+
+.sg-select {
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3E%3Cpath stroke='%2394a3b8' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3E%3C/svg%3E");
+  background-position: right 8px center;
+  background-repeat: no-repeat;
+  background-size: 16px;
+  padding-right: 32px;
+}
+
+.sg-range {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 4px;
+  background: var(--sg-border);
+  border-radius: 2px;
+  outline: none;
+}
+
+.sg-range::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--sg-signal-steady);
+  cursor: pointer;
+  transition: transform var(--sg-transition-fast);
+}
+
+.sg-range::-webkit-slider-thumb:hover {
+  transform: scale(1.2);
+}
+
+.sg-range::-moz-range-thumb {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--sg-signal-steady);
+  border: none;
+  cursor: pointer;
+}
+
+/* Toggle switch */
+.sg-toggle {
+  position: relative;
+  width: 44px;
+  height: 24px;
+  background: var(--sg-border);
+  border-radius: 9999px;
+  border: 1px solid var(--sg-border-strong);
+  cursor: pointer;
+  transition: background var(--sg-transition-fast), border-color var(--sg-transition-fast);
+}
+
+.sg-toggle:has(:checked) {
+  background: var(--sg-signal-steady);
+  border-color: var(--sg-signal-steady-dim);
+}
+
+.sg-toggle:has(:checked) .sg-toggle-thumb {
+  transform: translateX(20px);
+}
+
+.sg-toggle-input {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.sg-toggle-thumb {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 18px;
+  height: 18px;
+  background: white;
+  border-radius: 50%;
+  box-shadow: var(--sg-shadow-sm);
+  transition: transform var(--sg-transition-fast);
+}
+
+/* Hazard tier badges */
+.sg-tier-r0 { background: rgba(34, 197, 94, 0.15); color: #4ade80; border-color: rgba(34, 197, 94, 0.3); }
+.sg-tier-r1 { background: rgba(59, 130, 246, 0.15); color: #60a5fa; border-color: rgba(59, 130, 246, 0.3); }
+.sg-tier-r2 { background: rgba(244, 63, 94, 0.15); color: #fda4af; border-color: rgba(244, 63, 94, 0.3); }
+
+/* Appliance state indicators */
+.sg-appliance-on { color: var(--sg-signal-confirm); }
+.sg-appliance-off { color: var(--sg-text-muted); }
+
+/* Camera feed overlay */
+.sg-camera-box {
+  stroke: var(--sg-signal-steady);
+  stroke-width: 2;
+  fill: none;
+  stroke-dasharray: 8 4;
+}
+
+/* Animation: pulse for live recording */
+@keyframes sg-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+.sg-pulse {
+  animation: sg-pulse 1.5s ease-in-out infinite;
+}
+
+/* Animation: spin for loading */
+@keyframes sg-spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.sg-spin {
+  animation: sg-spin 1s linear infinite;
+}
+
+/* Animation: fade in */
+@keyframes sg-fade-in {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.sg-fade-in {
+  animation: sg-fade-in var(--sg-transition-normal) ease-out;
+}
+
+/* Animation: slide up */
+@keyframes sg-slide-up {
+  from { opacity: 0; transform: translateY(16px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.sg-slide-up {
+  animation: sg-slide-up var(--sg-transition-slow) ease-out;
+}
+
+/* Status dots */
+.sg-status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+.sg-status-steady { background: var(--sg-signal-steady); box-shadow: 0 0 8px var(--sg-signal-steady); }
+.sg-status-attention { background: var(--sg-signal-attention); box-shadow: 0 0 8px var(--sg-signal-attention); }
+.sg-status-confirm { background: var(--sg-signal-confirm); box-shadow: 0 0 8px var(--sg-signal-confirm); }
+.sg-status-hazard { background: var(--sg-signal-hazard); box-shadow: 0 0 8px var(--sg-signal-hazard); }
+.sg-status-idle { background: var(--sg-text-muted); }
+
+/* Layout utilities */
+.sg-grid {
+  display: grid;
+  gap: var(--sg-space-4);
+}
+
+.sg-grid-2 { grid-template-columns: repeat(2, 1fr); }
+.sg-grid-3 { grid-template-columns: repeat(3, 1fr); }
+.sg-grid-4 { grid-template-columns: repeat(4, 1fr); }
+
+@media (max-width: 768px) {
+  .sg-grid-2,
+  .sg-grid-3,
+  .sg-grid-4 {
+    grid-template-columns: 1fr;
+  }
+}
+
+.sg-flex {
+  display: flex;
+  gap: var(--sg-space-3);
+}
+
+.sg-flex-center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--sg-space-3);
+}
+
+.sg-flex-between {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sg-space-3);
+}
+
+/* Responsive text clamp */
+.sg-text-clamp-2 {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* Print styles */
+@media print {
+  .no-print { display: none !important; }
+}

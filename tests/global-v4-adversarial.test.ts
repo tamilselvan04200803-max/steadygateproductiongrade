@@ -1262,8 +1262,10 @@ async function runGlobalV4Suite() {
         darkBuf[i * 4 + 2] = 22 + ((i + s) % 11);
         darkBuf[i * 4 + 3] = 255;
       }
-      // Pre-allocate workLuma/workCb/workCr buffers on this analyzer instance before timing frame conditioning
-      analyzer.conditionFrameLumaOnly(new Uint8ClampedArray(darkBuf), w, h);
+      // Warm up JIT and pre-allocate buffers on this analyzer instance before timing frame conditioning
+      for (let wIter = 0; wIter < 3; wIter++) {
+        analyzer.conditionFrameLumaOnly(darkBuf, w, h);
+      }
       const cRes = analyzer.conditionFrameLumaOnly(darkBuf, w, h);
       maxCondMs = Math.max(maxCondMs, cRes.elapsedMs);
       maxChromaDrift = Math.max(maxChromaDrift, cRes.chromaDriftDeltaCbCr);

@@ -387,11 +387,12 @@ export function runContinuousSoakReplay(options?: {
 
 export function printSoakReplayReport(report: SoakReplayReport): void {
   console.log("================================================================================");
-  console.log("  STEADYGATE v6.0 — CLINICAL SOAK REPLAY & DUAL-OBJECTIVE DET REPORT");
+  console.log("  STEADYGATE v6.0 — SIMULATED MOTOR REPLAY & DUAL-OBJECTIVE DET BENCHMARK");
+  console.log("  (Simulated Pathological Replay — Not Clinical Observation)");
   console.log("================================================================================\n");
 
   console.log(`Generated: ${report.generatedAtIso}`);
-  console.log(`Total Simulated Soak Duration: ${report.aggregate.totalSoakHours.toFixed(1)} hours`);
+  console.log(`Total Simulated Replay Duration: ${report.aggregate.totalSoakHours.toFixed(1)} hours (synthetic stream)`);
   console.log(`Aggregate False Activations: ${report.aggregate.totalFalseActivations}`);
   console.log(
     `Rule-of-Three 95% Bound: <= ${report.aggregate.aggregateUpper95Bound.toFixed(4)} FA/hr (Target <= 0.05)`
@@ -400,11 +401,11 @@ export function printSoakReplayReport(report: SoakReplayReport): void {
     `Overall First-Attempt Intent Success: ${report.aggregate.overallIntentSuccessRatePct}% (Target >= 95.0%)`
   );
   console.log(
-    `Worst-Case Time-to-Activate p95: ${report.aggregate.overallTimeToActivateP95Ms} ms (Target <= 1200 ms)\n`
+    `Simulated Actuation Step Overhead p95: ${report.aggregate.overallTimeToActivateP95Ms} ms (Target <= 1200 ms)\n`
   );
 
   console.log(
-    "| Profile | Description | Soak Hrs | FA | FA/hr (95% Bound) | Intent Success | T_act p50 | T_act p95 | Status |"
+    "| Profile | Description | Replay Hrs | FA | FA/hr (95% Bound) | Intent Success | Act Overhead p50* | Act Overhead p95* | Status |"
   );
   console.log(
     "|:---|:---|:---:|:---:|:---:|:---:|:---:|:---:|:---:|"
@@ -417,9 +418,20 @@ export function printSoakReplayReport(report: SoakReplayReport): void {
     );
   }
 
+  console.log("\n* Benchmark Terminology & Methodological Notes:");
+  console.log("  1. 0 ms internal actuation overhead is NOT total activation latency.");
+  console.log("     It measures loop step delay in the simulation harness. Total real-world latency");
+  console.log("     includes camera frame acquisition (~33.3ms), MediaPipe inference (~15-30ms),");
+  console.log("     and SPRT dwell confirmation (~400-800ms).");
+  console.log("  2. 62.5 hours of simulated replay is NOT clinical observation.");
+  console.log("     This benchmark evaluates mathematical motor profiles, not human clinical trials.");
+  console.log("  3. Synthetic gesture accuracy does NOT establish real-world accuracy.");
+  console.log("     Real-world performance requires live webcam evaluation under varied lighting,");
+  console.log("     camera noise, skin tones, and uncontrolled background clutter.");
+
   console.log("\n================================================================================");
   console.log(
-    `  VERDICT: ${report.aggregate.overallVerdict === "PASS" ? "ALL 5 CLINICAL PROFILES PASSED (100% GREEN)" : "SOAK REPLAY FAILED"}`
+    `  VERDICT: ${report.aggregate.overallVerdict === "PASS" ? "ALL 5 SIMULATED MOTOR PROFILES PASSED (100% GREEN)" : "SOAK REPLAY FAILED"}`
   );
   console.log("================================================================================\n");
 }

@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-10-17T06:45:44.989Z",
+  "updatedAt": "2026-11-18T11:51:31.120Z",
   "users": {
     "3": {
       "id": 3,
@@ -17,8 +17,8 @@
       "lastCalibratedAt": "2026-10-15T07:35:10.705Z",
       "createdAt": "2026-09-29T19:34:09.467Z",
       "latestExtractedTelemetry": {
-        "frameId": "frm_1792219544962_zfi6p",
-        "capturedAtIso": "2026-10-17T06:45:44.962Z",
+        "frameId": "frm_1795002688727_7jdzr",
+        "capturedAtIso": "2026-11-18T11:51:28.727Z",
         "classification": {
           "resolvedGesture": "FIST",
           "confidence": 0.94,
@@ -73,9 +73,9 @@
         "tremorAndKinematics": {
           "dominantTremorHz": 5.2,
           "tremorAmplitudeRms": 0.045,
-          "spectralConcentration": 0.75,
+          "spectralConcentration": 0.31,
           "normalizedStability": 0.88,
-          "lockStage": "FINALIZED_LOCKED"
+          "lockStage": "INITIALIZED_60S_CALIB"
         },
         "sceneOptics": {
           "luminanceMean": 0.52,
@@ -88,7 +88,7 @@
       "latestKinematics": {
         "f0Hz": 5.2,
         "amplitudeRms": 0.045,
-        "stabilityRaw": 0.37,
+        "stabilityRaw": 0,
         "stabilityNorm": 0.88
       },
       "latestHandMorphology": {
@@ -98,7 +98,7 @@
         "fingerFlexion": [
           0,
           0.017328887207895254,
-          0.01714787919272119,
+          0.01714787919272118,
           0.016965624140474873,
           0.016965624140474863
         ],
@@ -154,11 +154,11 @@
         "gesture": "FIST",
         "confidence": 0.94,
         "margin": 0.84,
-        "attention": 0,
-        "sceneQuality": 0.86
+        "attention": 0.92,
+        "sceneQuality": 0.88
       },
-      "updatedAt": "2026-10-17T06:45:44.989Z",
-      "observationSnapshotsCount": 15
+      "updatedAt": "2026-11-18T11:51:31.120Z",
+      "observationSnapshotsCount": 31
     },
     "user_parkinsons_1": {
       "id": "user_parkinsons_1",

@@ -15,6 +15,11 @@ image-level transforms (`brightness_scale`, `gaussian_noise`, `motion_blur`, `pa
 
 Writes `RESULTS.md`, `metrics.json`, and `results.csv` with explicit `n` sample counts, exposure
 duration, and illustrative upper bounds (`3/n`) for zero-event results.
+
+Adversarial Tremor Synthesis (Zhang et al. ICCV 2025 DataCV; DexMimicGen 2024):
+Generates pathological tremor trajectories (3.5-14 Hz with realistic harmonic content)
+that are rare or impossible to ethically collect from patients, for injection into
+Mondrian calibration sets and SPRT stress testing.
 """
 
 from __future__ import annotations
@@ -23,6 +28,7 @@ import argparse
 import csv
 from dataclasses import dataclass
 import json
+import math
 from pathlib import Path
 import random
 import statistics
@@ -37,6 +43,144 @@ from steadygate.config import load_config
 from steadygate.events import Observation
 from steadygate.health import TelemetryHealthEvaluator
 from steadygate.policy import GESTURE_ACTION_MAP, SteadyGatePolicy
+
+
+# ---------------------------------------------------------------------------
+# Adversarial Tremor Synthesis (Zhang et al. ICCV 2025 DataCV; DexMimicGen 2024)
+# Generates pathological tremor trajectories for per-profile Mondrian calibration
+# ---------------------------------------------------------------------------
+TREMOR_PROFILES: dict[str, dict[str, Any]] = {
+    "PD_REST_TREMOR_4_6HZ": {
+        "f0_range": (4.0, 6.0),
+        "amp_range": (0.035, 0.055),
+        "harmonic_content": [0.3, 0.15, 0.05, 0.02],  # f0, 2f0, 3f0, 4f0 ratios
+        "nonstationarity": 0.12,
+    },
+    "ET_KINETIC_DUAL_PEAK_5_10HZ": {
+        "f0_range": (5.0, 5.5),
+        "f1_range": (9.0, 10.0),
+        "amp_range": (0.05, 0.075),
+        "harmonic_content": [0.5, 0.2, 0.08, 0.03],
+        "nonstationarity": 0.08,
+    },
+    "LID_CHOREA_DYSKINESIA_1_3HZ": {
+        "f0_range": (1.0, 3.0),
+        "amp_range": (0.025, 0.05),
+        "harmonic_content": [0.6, 0.25, 0.1, 0.04],
+        "nonstationarity": 0.25,
+    },
+    "HEAD_TITUBATION_5HZ": {
+        "f0_range": (4.5, 5.5),
+        "amp_range": (0.04, 0.06),
+        "harmonic_content": [0.4, 0.18, 0.06, 0.02],
+        "nonstationarity": 0.15,
+    },
+    "ARTHRITIC_CONTRACTURE_052_ROM": {
+        "f0_range": (3.5, 7.0),
+        "amp_range": (0.03, 0.06),
+        "harmonic_content": [0.35, 0.2, 0.1, 0.05],
+        "nonstationarity": 0.1,
+    },
+}
+
+
+def synthesize_pathological_tremor_trajectory(
+    rng: random.Random,
+    profile_name: str,
+    duration_sec: float = 3.0,
+    sampling_rate_hz: int = 30,
+    base_y: float = 0.5,
+) -> list[float]:
+    """
+    Generate a synthetic wrist Y-displacement trajectory with pathological tremor.
+
+    Uses continuous-time multi-harmonic model with non-stationary frequency drift
+    matching the specified clinical profile. Returns detrended trajectory samples
+    suitable for injecting into Mondrian calibration or SPRT stress testing.
+    """
+    profile = TREMOR_PROFILES.get(profile_name, TREMOR_PROFILES["PD_REST_TREMOR_4_6HZ"])
+    n_samples = int(duration_sec * sampling_rate_hz)
+    trajectory: list[float] = []
+
+    f0 = rng.uniform(*profile["f0_range"])
+    amp = rng.uniform(*profile["amp_range"])
+    harmonics = profile["harmonic_content"]
+    nonstat = profile["nonstationarity"]
+
+    # Frequency drift: slow random walk around f0
+    current_f0 = f0
+    drift_phase = 0.0
+
+    for i in range(n_samples):
+        t = i / sampling_rate_hz
+
+        # Slow frequency drift (non-stationary tremor)
+        drift_phase += rng.uniform(-nonstat, nonstat) * 0.01
+        current_f0 = max(2.5, min(14.0, f0 + drift_phase))
+
+        # Multi-harmonic synthesis
+        y_val = base_y
+        for h_idx, h_ratio in enumerate(harmonics):
+            h_freq = current_f0 * (h_idx + 1)
+            y_val += amp * h_ratio * math.sin(2 * math.pi * h_freq * t + rng.uniform(0, 2 * math.pi))
+
+        trajectory.append(y_val)
+
+    return trajectory
+
+
+def inject_tremor_into_observation_stream(
+    rng: random.Random,
+    observations: list[Observation],
+    profile_name: str = "PD_REST_TREMOR_4_6HZ",
+) -> list[Observation]:
+    """
+    Inject adversarial tremor into a clean observation stream by perturbing
+    wrist_xy coordinates with a synthesized pathological trajectory.
+
+    Returns a new list of Observations with tremor_injected flag and updated
+    tremor_coefficient reflecting the injected amplitude.
+    """
+    import math
+
+    trajectory = synthesize_pathological_tremor_trajectory(
+        rng, profile_name, duration_sec=len(observations) * 0.05, sampling_rate_hz=30
+    )
+
+    # Compute RMS of injected tremor for tremor_coefficient
+    detrended = [v - statistics.mean(trajectory) for v in trajectory]
+    injected_rms = math.sqrt(sum(v * v for v in detrended) / len(detrended))
+
+    injected_obs: list[Observation] = []
+    for i, (obs, tremor_y) in enumerate(zip(observations, trajectory)):
+        if not obs.hand_present:
+            injected_obs.append(obs)
+            continue
+
+        # Perturb wrist Y coordinate with tremor
+        wx, wy = obs.wrist_xy
+        new_wy = wy + (tremor_y - 0.5) * 0.1  # Scale to normalized coordinates
+
+        new_obs = Observation(
+            gesture=obs.gesture,
+            score=obs.score,
+            hand_present=obs.hand_present,
+            landmark_quality=obs.landmark_quality,
+            in_zone=obs.in_zone,
+            num_hands=obs.num_hands,
+            wrist_xy=(wx, new_wy),
+            brightness=obs.brightness,
+            contrast=obs.contrast,
+            background_entropy=obs.background_entropy,
+            tremor_coefficient=min(1.0, injected_rms * 10.0),  # Scale to [0,1]
+            head_yaw_deg=obs.head_yaw_deg,
+            head_pitch_deg=obs.head_pitch_deg,
+            user_intent_verified=obs.user_intent_verified,
+            aruco_marker_id=obs.aruco_marker_id,
+        )
+        injected_obs.append(new_obs)
+
+    return injected_obs
 
 LEVEL_1_PERTURBATIONS: tuple[str, ...] = (
     "frame_drop",

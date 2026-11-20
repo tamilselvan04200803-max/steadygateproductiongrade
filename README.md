@@ -78,7 +78,7 @@ steadygate-prior-art-analysis/
 │   ├── global-v4-adversarial.test.ts # Multi-seed end-to-end batteries G1-G11
 │   └── test_phase*.py             # Python digital twin, recorder, and chaos tests
 ├── tools/                         # Specialized developer tooling
-│   └── soak-replay.ts             # 62.5h clinical soak simulator across 5 pathological profiles
+│   └── soak-replay.ts             # 62.5h simulated motor replay benchmark across 5 pathological profiles
 ├── package.json                   # NPM package scripts and dependencies
 ├── pyproject.toml                 # Python package specification and pytest configuration
 └── README.md                      # This file
@@ -86,13 +86,20 @@ steadygate-prior-art-analysis/
 
 ---
 
-## 3. Clinical Invariants & Verified Performance
+## 3. Biomechanical Invariants & Verified Performance
+
+> [!NOTE]
+> **Research Prototype & Benchmark Terminology Disclaimers**:
+> 1. **Internal Actuation Overhead**: $0\text{ ms}$ internal actuation overhead in simulation is *not* total activation latency. End-to-end activation latency includes camera exposure (~33.3 ms), MediaPipe inference (~15–30 ms), biomechanical filtering (~0.9 ms), and SPRT dwell confirmation (~400–800 ms).
+> 2. **Simulated Replay**: 62.5 hours of simulated replay is a mathematical stress benchmark, *not* clinical observation of human patients.
+> 3. **Synthetic vs Real-World Accuracy**: Synthetic gesture accuracy does *not* establish real-world accuracy in live uncontrolled environments.
+> SteadyGate is an assistive engineering research prototype, not a clinically approved or regulatory certified medical device.
 
 SteadyGate simultaneously satisfies both **Safety** (zero false activations) and **Access** (maximum inclusivity) at the exact same operating threshold:
 
-| Category | Clinical Specification | Measured Result in v6.0-FINAL | Evidence Source |
+| Category | Engineering Specification | Measured Result in v6.0-FINAL | Evidence Source |
 | :--- | :--- | :--- | :--- |
-| **Soak Replay False Alarms** | $\le 0.05\text{ FA/hr}$ on multi-hour soak | **$0.0\text{ FA/hr}$** ($0 / 62.5\text{ h}$, Rule-of-3 upper 95% bound $\le 0.0480$) | [`docs/SOAK_REPORT.json`](./docs/SOAK_REPORT.json) |
+| **Soak Replay False Alarms** | $\le 0.05\text{ FA/hr}$ on multi-hour replay | **$0.0\text{ FA/hr}$** ($0 / 62.5\text{ h}$, Rule-of-3 upper 95% bound $\le 0.0480$) | [`docs/SOAK_REPORT.json`](./docs/SOAK_REPORT.json) |
 | **Bare-Hand Safety** | $0$ false object blocks on bare hands | **$0 / 1,030$** ($95\%$ upper bound $0.00291$, Wilson lower bound $99.63\%$) | [`docs/VALIDATION_REPORT.md`](./docs/VALIDATION_REPORT.md) |
 | **Intentionality Access** | $\ge 95\%$ first-attempt success across all profiles | **$100.0\%$** ($500 / 500$ trials across all 5 pathological profiles) | [`docs/SOAK_REPORT.json`](./docs/SOAK_REPORT.json) |
 | **Activation Latency** | $T_{\text{act}}\text{ p95} \le 1.20\text{ s}$ | **$T_{\text{act}}\text{ p95} \le 0.08\text{ s}$** across all profiles | [`docs/SOAK_REPORT.json`](./docs/SOAK_REPORT.json) |
@@ -156,7 +163,7 @@ npm test
 | `npm run test:challenger:2` | Challenger 2 Tremor $f_0$ & Concurrency Suite | 70 / 70 Passed |
 | `npm run test:global` | Global Adversarial Batteries G1–G11 (Seeds 42, 101, 2026) | 41 / 41 Passed |
 | `npm run test:py` | Python Digital Twin, Recorder & Chaos Matrix | 26 / 26 Passed |
-| `npm run test:soak` | Continuous 62.5h Clinical Soak Replay | 0 FA ($\le 0.048$ FA/hr) |
+| `npm run test:soak` | Continuous 62.5h Simulated Pathological Replay | 0 FA ($\le 0.048$ FA/hr) |
 
 ---
 

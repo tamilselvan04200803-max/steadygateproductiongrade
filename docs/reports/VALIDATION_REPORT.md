@@ -35,14 +35,16 @@ SteadyGate v6.0 upgrades the 100% offline-first assistive smart-home control pla
 
 Total Simulated Soak Duration: **62.5 hours** across 5 pathological motor profiles (12.5h each, 6,750,065 frames total).
 
-| Profile | Clinical Description | Soak Duration | Observed FA | FA/hr (95% Rule-of-3) | Intent Success | $T_{\text{act}}\text{ p50}$ | $T_{\text{act}}\text{ p95}$ | Status |
+| Profile | Motor Profile Description | Soak Duration | Observed FA | FA/hr (95% Rule-of-3) | Intent Success | Sim Actuation Overhead (p50)* | Sim Actuation Overhead (p95)* | Status |
 |:---|:---|:---:|:---:|:---:|:---:|:---:|:---:|:---:|
 | `PD_REST_TREMOR_4_6HZ` | Parkinson's Disease Rest Tremor ($4\text{--}6\text{ Hz}, A_{\text{rms}} = 0.045$) | 12.5 h | 0 | $\le 0.240\text{ FA/hr}$ | 100% | 0 ms | 0 ms | ✅ PASS |
 | `ET_KINETIC_DUAL_PEAK_5_10HZ` | Essential Tremor Kinetic Dual-Peak ($5.2 + 9.4\text{ Hz}, A_{\text{rms}} = 0.062$) | 12.5 h | 0 | $\le 0.240\text{ FA/hr}$ | 100% | 0 ms | 0 ms | ✅ PASS |
 | `LID_CHOREA_DYSKINESIA_1_3HZ` | Levodopa-Induced Dyskinesia / Chorea ($1\text{--}3\text{ Hz}, A_{\text{rms}} = 0.038$) | 12.5 h | 0 | $\le 0.240\text{ FA/hr}$ | 100% | 0 ms | 0 ms | ✅ PASS |
 | `HEAD_TITUBATION_5HZ_PLUS_HYPOMIMIA` | Head Titubation ($5\text{ Hz}, \pm 12^\circ\text{ yaw}$) + Facial Hypomimia | 12.5 h | 0 | $\le 0.240\text{ FA/hr}$ | 100% | 0 ms | 0 ms | ✅ PASS |
 | `ARTHRITIC_CONTRACTURE_052_ROM` | Arthritic Finger Contracture ($0.52\text{ ROM}$ extension ceiling) | 12.5 h | 0 | $\le 0.240\text{ FA/hr}$ | 100% | 0 ms | 0 ms | ✅ PASS |
-| **AGGREGATE TOTAL** | **All 5 Pathological Clinical Profiles Combined** | **62.5 h** | **0** | **$\le 0.0480\text{ FA/hr}$** | **100%** | **0 ms** | **0 ms** | **✅ PASS** |
+| **AGGREGATE TOTAL** | **All 5 Motor Profile Simulations Combined** | **62.5 h** | **0** | **$\le 0.0480\text{ FA/hr}$** | **100%** | **0 ms** | **0 ms** | **✅ PASS** |
+
+\* **Actuation Overhead Note:** The 0 ms reported in simulated replay is internal test-loop step overhead, *not* total end-to-end activation latency. Real-world end-to-end latency includes camera exposure (~33.3 ms), MediaPipe inference (~15–30 ms), and SPRT dwell confirmation (~400–800 ms). Furthermore, 62.5h of simulated replay is *not* clinical observation, and synthetic gesture accuracy does *not* establish real-world accuracy.
 
 ---
 

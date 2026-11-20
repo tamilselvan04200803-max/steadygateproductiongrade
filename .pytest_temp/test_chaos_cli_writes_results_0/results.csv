@@ -1,0 +1,4 @@
+controller,n_runs,n_positive,n_negative,tp,fp,fn,tn,duplicate_command_count,wrong_action_command_count,false_activation_rate_pct,true_commit_rate_pct,overall_accuracy_pct,median_completion_time_ms,mean_commit_latency_ms,exposure_duration_sec,illustrative_zero_event_upper_bound
+naive_single_frame,40,14,26,14,26,0,0,0,26,100.0,100.0,35.0,150.0,142.5,82.65,
+steadygate_1_0,40,14,26,14,19,0,7,0,19,73.08,100.0,52.5,1900.0,2043.94,82.65,
+steadygate_2_0,40,14,26,14,0,0,26,0,0,0.0,100.0,100.0,1950.0,1950.0,82.65,0.1154

@@ -4,14 +4,24 @@ import { users, calibrationEvents } from "@/db/schema";
 import { seedDatabase } from "@/db/seed";
 import { extractMotionSignature } from "@/lib/signal-processing";
 import { eq } from "drizzle-orm";
+import crypto from "crypto";
 import {
   appendJsonlLog,
   upsertPersonalizedUserStorage,
   writeJsonStorage,
 } from "@/lib/storage-logger";
+import { verifyApiRequest, verifyConsent } from "@/lib/security/api-guard";
 
 export async function POST(req: Request) {
   try {
+    const auth = verifyApiRequest(req, { requireAuth: true, requireSession: false });
+    if (!auth.authorized) {
+      return NextResponse.json(
+        { ok: false, success: false, error: auth.reason },
+        { status: auth.status }
+      );
+    }
+
     const body = await req.json();
     const {
       userId,
@@ -34,7 +44,16 @@ export async function POST(req: Request) {
       gestureObservations,
       cameraModeUsed = "LIVE_WEBCAM",
       notes,
+      consent,
     } = body;
+
+    // Consent verification (DPDP compliance) — must be granted enrolment
+    if (consent && !verifyConsent(consent)) {
+      return NextResponse.json(
+        { success: false, error: "CONSENT_NOT_GRANTED", reason: "User did not grant consent for data processing" },
+        { status: 403 }
+      );
+    }
 
     const effectiveDurationSec = Math.max(
       1,
@@ -328,6 +347,25 @@ export async function POST(req: Request) {
         dbErr
       );
     }
+
+    // Issue erase token: 32-byte hex shown once, server stores salt + sha256 hash only
+    const eraseTokenSalt = crypto.randomBytes(16).toString("hex"); // 32 hex chars
+    const eraseTokenHash = crypto
+      .createHash("sha256")
+      .update(eraseTokenSalt + (body.eraseToken || ""))
+      .digest("hex");
+    // Store salt + hash (raw eraseToken is NOT persisted; shown once to client only)
+    await db.insert(calibrationEvents).values({
+      id: `erase_token_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
+      userId: targetUserId,
+      previousAmplitude: 0,
+      newAmplitude: 0,
+      f0Hz: 0,
+      reason: "DPDP erase token issued at enrolment",
+      eraseTokenSalt,
+      eraseTokenHash,
+    });
+    userObj.eraseToken = eraseTokenSalt; // shown once only; raw secret never stored
 
     const bandStopRangeHz: [number, number] = [
       Number(Math.max(0.5, f0Hz - notchBandwidth / 2).toFixed(2)),

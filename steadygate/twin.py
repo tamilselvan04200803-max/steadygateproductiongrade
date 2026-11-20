@@ -32,11 +32,12 @@ from steadygate.actuator import COMMAND_TO_STATE, VirtualActuator
 from steadygate.config import load_config
 from steadygate.events import ActionCommand, Observation
 from steadygate.policy import SteadyGatePolicy
+from steadygate.cache import NonceCache
 
 DEFAULT_LAN_HMAC_SECRET = os.environ.get(
     "STEADYGATE_LAN_HMAC_SECRET", "steadygate-v6-local-lan-hmac-key"
 )
-_USED_NONCES: dict[str, float] = {}
+_NONCE_CACHE = NonceCache(ttl_ms=10_000, max_size=4096)
 
 
 def verify_lan_bridge_hmac(
@@ -60,12 +61,9 @@ def verify_lan_bridge_hmac(
     if abs(current_ms - ts_num) > max_skew_ms:
         return False, "HMAC_TIMESTAMP_OUT_OF_WINDOW"
 
-    # Prune expired nonces
-    expired = [n for n, t in _USED_NONCES.items() if current_ms - t > max_skew_ms * 2.0]
-    for n in expired:
-        _USED_NONCES.pop(n, None)
-
-    if nonce_header in _USED_NONCES:
+    # Prune expired nonces and reject replayed nonces via single-flight check
+    _NONCE_CACHE.prune()
+    if _NONCE_CACHE.check_and_register(nonce_header):
         return False, "HMAC_NONCE_REPLAY_DETECTED"
 
     canonical = f"{int(ts_num)}.{nonce_header}.{payload_raw}"
@@ -75,7 +73,6 @@ def verify_lan_bridge_hmac(
     if not hmac.compare_digest(signature_header, expected):
         return False, "HMAC_SIGNATURE_MISMATCH"
 
-    _USED_NONCES[nonce_header] = current_ms
     return True, "HMAC_VERIFIED"
 
 LOCAL_DASHBOARD_HTML = """<!DOCTYPE html>

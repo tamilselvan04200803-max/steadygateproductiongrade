@@ -11,13 +11,17 @@ import { STEADYGATE_V6_CONFIG } from "../../config/steadygate.config";
  * Subagent S10 & Wave 5 Stage 5 — Authenticated Local LAN Hardware Bridge
  * Executes 100% offline local LAN appliance actuation with:
  *  - HMAC-SHA256 request signing (X-SteadyGate-Signature, X-SteadyGate-Timestamp, X-SteadyGate-Nonce)
- *  - +-5,000 ms replay window and nonce cache
+ *  - +-5,000 ms replay window and nonce cache (LruCache-backed, bounded, observable)
  *  - 800 ms AbortController timeout, Tier 3 Two-Step Safety Chord verification, and 3-strike Circuit Breaker
  */
 
+import { NonceCache } from "../../lib/cache";
+
 const DEFAULT_LAN_HMAC_SECRET =
   process.env.STEADYGATE_LAN_HMAC_SECRET || "steadygate-v6-local-lan-hmac-key";
-const usedNonces = new Map<string, number>();
+const nonceCache = new NonceCache(
+  10_000 // 10s max skew * 2 from config: stage5Actuation.hmacReplayWindowMs.value * 2
+);
 
 export function computeLanBridgeHmacSignature(
   payloadJson: string,
@@ -74,12 +78,8 @@ export function verifyLanBridgeHmacRequest(input: {
   }
 
   // Prune expired nonces and reject replayed nonces
-  for (const [n, seenAt] of usedNonces.entries()) {
-    if (nowMs - seenAt > maxSkewMs * 2) {
-      usedNonces.delete(n);
-    }
-  }
-  if (usedNonces.has(input.nonceHeader)) {
+  nonceCache.prune();
+  if (nonceCache.checkAndRegister(input.nonceHeader)) {
     return { valid: false, status: 401, reason: "HMAC_NONCE_REPLAY_DETECTED" };
   }
 
@@ -95,12 +95,11 @@ export function verifyLanBridgeHmacRequest(input: {
     return { valid: false, status: 401, reason: "HMAC_SIGNATURE_MISMATCH" };
   }
 
-  usedNonces.set(input.nonceHeader, nowMs);
   return { valid: true, status: 200, reason: "HMAC_VERIFIED" };
 }
 
 export function clearLanBridgeNonceCache(): void {
-  usedNonces.clear();
+  nonceCache.clear();
 }
 
 export const globalActuatorCircuitBreaker = new ActuatorCircuitBreaker(3);

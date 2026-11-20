@@ -671,6 +671,10 @@ export class ContinuousTimeBMFLCKalman {
   private rCount = 0;
   private readonly cdf = new TimestampedCriticalDampedFilter();
   private t0Ms = -1;
+  // Solak & Ajoudani (2025) — Damped adaptive BMFLC step-size
+  private readonly dampedStepEnabled = STEADYGATE_V6_CONFIG.stage4TremorFilter.bmflcDampedStepSizeEnabled.value;
+  private readonly dampingFactor = STEADYGATE_V6_CONFIG.stage4TremorFilter.bmflcDampingFactor.value;
+  private readonly stepSize = new Float64Array(22); // per-bin adaptive step size
 
   constructor() {
     const fMin = STEADYGATE_V6_CONFIG.stage4TremorFilter.bmflcFreqMinHz.value;
@@ -682,6 +686,7 @@ export class ContinuousTimeBMFLCKalman {
       this.p00[m] = 0.05;
       this.p01[m] = 0.0;
       this.p11[m] = 0.05;
+      this.stepSize[m] = 0.18; // initial step size (will be adapted)
     }
   }
 
@@ -697,6 +702,7 @@ export class ContinuousTimeBMFLCKalman {
       this.p01[m] = 0;
       this.p11[m] = 0.05;
       this.binAmp[m] = 0;
+      this.stepSize[m] = 0.18; // reset step size
     }
   }
 
@@ -879,6 +885,14 @@ export class ContinuousTimeBMFLCKalman {
       this.p00[bestBinIdx] = (1 - kGain0) * p00Pred;
       this.p11[bestBinIdx] = (1 - kGain1) * p11Pred;
 
+      // Solak & Ajoudani (2025) — Damped adaptive BMFLC step-size
+      // stepSize[m] = stepSize[m] * (1 - dampingFactor * innovation^2) prevents weight-variance blowup
+      if (this.dampedStepEnabled) {
+        const innovation = Math.abs(statSin - this.wSin[bestBinIdx]) + Math.abs(statCos - this.wCos[bestBinIdx]);
+        const damp = 1.0 - this.dampingFactor * innovation * innovation;
+        this.stepSize[bestBinIdx] = Math.max(0.02, Math.min(0.5, this.stepSize[bestBinIdx] * damp));
+      }
+
       if (comp === 0) dominantHz = Math.round(bestF * 10) / 10;
       else secondaryHz = Math.round(bestF * 10) / 10;
 
@@ -931,10 +945,13 @@ export function evaluateDyskinesiaModulation(input: {
 } {
   let bandPower = 0;
   let totalPower = 0;
+  // Widened dyskinesia notch: 0.5-3.0 Hz (was 1.0-3.0 Hz) to prevent bleed at 3.5 Hz tremor edge
+  const notchMinHz = STEADYGATE_V6_CONFIG.stage4TremorFilter.dyskinesiaNotchMinHz.value;
+  const notchMaxHz = STEADYGATE_V6_CONFIG.stage4TremorFilter.dyskinesiaNotchMaxHz.value;
   for (const pt of input.spectrumPoints) {
     const p = pt.magnitude * pt.magnitude;
     totalPower += p;
-    if (pt.freqHz >= 1.0 && pt.freqHz <= 3.0) {
+    if (pt.freqHz >= notchMinHz && pt.freqHz <= notchMaxHz) {
       bandPower += p;
     }
   }

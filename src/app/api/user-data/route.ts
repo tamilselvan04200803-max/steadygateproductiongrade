@@ -1,7 +1,12 @@
 import { NextResponse } from "next/server";
 import { db } from "@/db";
-import { runtimeTelemetry, users } from "@/db/schema";
+import { runtimeTelemetry, users, calibrationEvents } from "@/db/schema";
 import { eq } from "drizzle-orm";
+import path from "path";
+import fs from "fs";
+import { verifyEraseToken } from "@/lib/security/api-guard";
+import crypto from "crypto";
+
 import {
   appendJsonlLog,
   readJsonStorage,
@@ -9,10 +14,7 @@ import {
   upsertPersonalizedUserStorage,
 } from "@/lib/storage-logger";
 import { ExtractedFrameTelemetry, GestureLabel } from "@/lib/types";
-import {
-  buildExtractedFrameTelemetry,
-  generateSyntheticGestureLandmarks,
-} from "@/lib/hand-gesture-engine";
+import { buildExtractedFrameTelemetry, generateSyntheticGestureLandmarks } from "@/lib/hand-gesture-engine";
 
 export const dynamic = "force-dynamic";
 
@@ -184,6 +186,78 @@ export async function POST(req: Request) {
     console.error("POST /api/user-data error:", error);
     return NextResponse.json(
       { success: false, error: "Failed to persist background user observation" },
+      { status: 500 }
+    );
+  }
+}
+
+export async function DELETE(req: Request) {
+  try {
+    const { searchParams } = new URL(req.url);
+    const clientEraseToken = searchParams.get("eraseToken") || "";
+
+    // Verify erase token using timing-safe comparison
+    const storedEraseEvents = await db
+      .select({ eraseTokenSalt: calibrationEvents.eraseTokenSalt, eraseTokenHash: calibrationEvents.eraseTokenHash })
+      .from(calibrationEvents)
+      .where(eq(calibrationEvents.reason, "DPDP erase token issued at enrolment"));
+
+    if (storedEraseEvents.length === 0) {
+      return NextResponse.json(
+        { success: false, error: "ERASE_TOKEN_NOT_FOUND", reason: "No erase token registered for this user" },
+        { status: 404 }
+      );
+    }
+
+    const storedEvent = storedEraseEvents[0];
+    const storedSalt = storedEvent.eraseTokenSalt || "";
+    const storedHash = storedEvent.eraseTokenHash || "";
+    const valid = verifyEraseToken(clientEraseToken, storedHash, storedSalt);
+
+    if (!valid) {
+      return NextResponse.json(
+        { success: false, error: "INVALID_ERASE_TOKEN", reason: "Erase token verification failed" },
+        { status: 403 }
+      );
+    }
+
+    // Get userId from query param, default to empty string (safe default)
+    const eraseUserId = searchParams.get("userId") || "";
+
+    // Erase PGlite/Postgres user rows
+    await db.delete(users).where(eq(users.id, eraseUserId));
+
+    // Erase storage/*.json files
+    const STORAGE_DIR = path.join(process.cwd(), "storage");
+    const jsonFiles = ["users_personalized.json", "user_*.json"];
+    for (const file of jsonFiles) {
+      const filePath = path.join(STORAGE_DIR, file.replace("*", ""));
+      if (fs.existsSync(filePath)) {
+        fs.unlinkSync(filePath);
+      }
+    }
+
+    // Write locked atomic tombstones in flight-recorder JSONL preserving crypto chain integrity
+    const tombstone = {
+      erasedAt: new Date().toISOString(),
+      userId: eraseUserId,
+      erasedBy: "DELETE /api/user-data",
+      chainHash: crypto.createHash("sha256").update(`erased:${eraseUserId}:${Date.now()}`).digest("hex"),
+    };
+    appendJsonlLog("flight_recorder.jsonl", {
+      event: "user_data_erased",
+      ...tombstone,
+    });
+
+    return NextResponse.json({
+      success: true,
+      erased: true,
+      tombstone,
+    });
+  } catch (error: any) {
+    console.error("DELETE /api/user-data error:", error);
+    return NextResponse.json(
+      { success: false, error: error?.message || "User data erasure failed" },
       { status: 500 }
     );
   }

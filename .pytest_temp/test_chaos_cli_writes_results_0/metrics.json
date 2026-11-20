@@ -1,0 +1,301 @@
+{
+  "seed": 1,
+  "runs_n": 40,
+  "n_runs": 40,
+  "n_frames_evaluated": 1653,
+  "exposure_duration_sec": 82.65,
+  "n_positive_runs": 14,
+  "n_negative_runs": 26,
+  "level_1_perturbations": [
+    "frame_drop",
+    "label_flicker",
+    "score_noise",
+    "timestamp_jitter",
+    "latency_spike",
+    "landmark_dropout",
+    "hand_loss_burst",
+    "duplicate_frames"
+  ],
+  "level_1_proxy_disclosure": "Level-1 telemetry perturbations (frame_drop, label_flicker, score_noise, timestamp_jitter, latency_spike, landmark_dropout, hand_loss_burst, duplicate_frames) are deterministic proxies for physical hand occlusion, ambient lighting shifts, and motion blur.",
+  "feedback_mode": "simulated",
+  "matrix": {
+    "naive_single_frame": {
+      "tp": 14,
+      "fp": 26,
+      "fn": 0,
+      "tn": 0,
+      "intended_command_success_count": 14,
+      "unintended_command_count": 26,
+      "duplicate_command_count": 0,
+      "wrong_action_command_count": 26,
+      "missed_intended_command_count": 0,
+      "false_activation_rate_pct": 100.0,
+      "true_commit_rate_pct": 100.0,
+      "overall_accuracy_pct": 35.0,
+      "mean_commit_latency_ms": 142.5,
+      "median_completion_time_ms": 150.0,
+      "exposure_duration_sec": 82.65,
+      "illustrative_zero_event_upper_bound": null,
+      "positive_commands": {
+        "n": 14,
+        "commits": 14,
+        "clean_rate_pct": 100.0
+      },
+      "negative_controls": {
+        "n": 7,
+        "false_actuations": 7
+      },
+      "degraded_heater_attempts": {
+        "n": 7,
+        "commits": 7,
+        "blocked": 0
+      },
+      "distracted_face_attempts": {
+        "n": 6,
+        "commits": 6,
+        "blocked": 0
+      },
+      "defective_actuator_attempts": {
+        "n": 6,
+        "commits": 6,
+        "blocked": 0
+      }
+    },
+    "steadygate_1_0": {
+      "tp": 14,
+      "fp": 19,
+      "fn": 0,
+      "tn": 7,
+      "intended_command_success_count": 14,
+      "unintended_command_count": 19,
+      "duplicate_command_count": 0,
+      "wrong_action_command_count": 19,
+      "missed_intended_command_count": 0,
+      "false_activation_rate_pct": 73.08,
+      "true_commit_rate_pct": 100.0,
+      "overall_accuracy_pct": 52.5,
+      "mean_commit_latency_ms": 2043.94,
+      "median_completion_time_ms": 1900.0,
+      "exposure_duration_sec": 82.65,
+      "illustrative_zero_event_upper_bound": null,
+      "positive_commands": {
+        "n": 14,
+        "commits": 14,
+        "clean_rate_pct": 100.0
+      },
+      "negative_controls": {
+        "n": 7,
+        "false_actuations": 0
+      },
+      "degraded_heater_attempts": {
+        "n": 7,
+        "commits": 7,
+        "blocked": 0
+      },
+      "distracted_face_attempts": {
+        "n": 6,
+        "commits": 6,
+        "blocked": 0
+      },
+      "defective_actuator_attempts": {
+        "n": 6,
+        "commits": 6,
+        "blocked": 0
+      }
+    },
+    "steadygate_2_0": {
+      "tp": 14,
+      "fp": 0,
+      "fn": 0,
+      "tn": 26,
+      "intended_command_success_count": 14,
+      "unintended_command_count": 0,
+      "duplicate_command_count": 0,
+      "wrong_action_command_count": 0,
+      "missed_intended_command_count": 0,
+      "false_activation_rate_pct": 0.0,
+      "true_commit_rate_pct": 100.0,
+      "overall_accuracy_pct": 100.0,
+      "mean_commit_latency_ms": 1950.0,
+      "median_completion_time_ms": 1950.0,
+      "exposure_duration_sec": 82.65,
+      "illustrative_zero_event_upper_bound": 0.1154,
+      "positive_commands": {
+        "n": 14,
+        "commits": 14,
+        "clean_rate_pct": 100.0
+      },
+      "negative_controls": {
+        "n": 7,
+        "false_actuations": 0
+      },
+      "degraded_heater_attempts": {
+        "n": 7,
+        "commits": 0,
+        "blocked": 7
+      },
+      "distracted_face_attempts": {
+        "n": 6,
+        "commits": 0,
+        "blocked": 6
+      },
+      "defective_actuator_attempts": {
+        "n": 6,
+        "commits": 0,
+        "blocked": 6
+      },
+      "reason_code_counts": {
+        "HOLD_TOO_SHORT": 804,
+        "NOT_RELEASED": 102,
+        "UNKNOWN_GESTURE": 568,
+        "HEALTH_LOCKED": 14,
+        "HEALTH_STRICT": 7,
+        "OUTSIDE_ZONE": 70,
+        "LOW_SCORE": 69,
+        "USER_DISTRACTED": 12,
+        "DEVICE_FAULT_LOCK": 6,
+        "TARGET_CHANGED": 1
+      }
+    }
+  },
+  "pipelines": {
+    "naive_single_frame": {
+      "tp": 14,
+      "fp": 26,
+      "fn": 0,
+      "tn": 0,
+      "intended_command_success_count": 14,
+      "unintended_command_count": 26,
+      "duplicate_command_count": 0,
+      "wrong_action_command_count": 26,
+      "missed_intended_command_count": 0,
+      "false_activation_rate_pct": 100.0,
+      "true_commit_rate_pct": 100.0,
+      "overall_accuracy_pct": 35.0,
+      "mean_commit_latency_ms": 142.5,
+      "median_completion_time_ms": 150.0,
+      "exposure_duration_sec": 82.65,
+      "illustrative_zero_event_upper_bound": null,
+      "positive_commands": {
+        "n": 14,
+        "commits": 14,
+        "clean_rate_pct": 100.0
+      },
+      "negative_controls": {
+        "n": 7,
+        "false_actuations": 7
+      },
+      "degraded_heater_attempts": {
+        "n": 7,
+        "commits": 7,
+        "blocked": 0
+      },
+      "distracted_face_attempts": {
+        "n": 6,
+        "commits": 6,
+        "blocked": 0
+      },
+      "defective_actuator_attempts": {
+        "n": 6,
+        "commits": 6,
+        "blocked": 0
+      }
+    },
+    "policy_1_0": {
+      "tp": 14,
+      "fp": 19,
+      "fn": 0,
+      "tn": 7,
+      "intended_command_success_count": 14,
+      "unintended_command_count": 19,
+      "duplicate_command_count": 0,
+      "wrong_action_command_count": 19,
+      "missed_intended_command_count": 0,
+      "false_activation_rate_pct": 73.08,
+      "true_commit_rate_pct": 100.0,
+      "overall_accuracy_pct": 52.5,
+      "mean_commit_latency_ms": 2043.94,
+      "median_completion_time_ms": 1900.0,
+      "exposure_duration_sec": 82.65,
+      "illustrative_zero_event_upper_bound": null,
+      "positive_commands": {
+        "n": 14,
+        "commits": 14,
+        "clean_rate_pct": 100.0
+      },
+      "negative_controls": {
+        "n": 7,
+        "false_actuations": 0
+      },
+      "degraded_heater_attempts": {
+        "n": 7,
+        "commits": 7,
+        "blocked": 0
+      },
+      "distracted_face_attempts": {
+        "n": 6,
+        "commits": 6,
+        "blocked": 0
+      },
+      "defective_actuator_attempts": {
+        "n": 6,
+        "commits": 6,
+        "blocked": 0
+      }
+    },
+    "policy_2_0_adaptive": {
+      "tp": 14,
+      "fp": 0,
+      "fn": 0,
+      "tn": 26,
+      "intended_command_success_count": 14,
+      "unintended_command_count": 0,
+      "duplicate_command_count": 0,
+      "wrong_action_command_count": 0,
+      "missed_intended_command_count": 0,
+      "false_activation_rate_pct": 0.0,
+      "true_commit_rate_pct": 100.0,
+      "overall_accuracy_pct": 100.0,
+      "mean_commit_latency_ms": 1950.0,
+      "median_completion_time_ms": 1950.0,
+      "exposure_duration_sec": 82.65,
+      "illustrative_zero_event_upper_bound": 0.1154,
+      "positive_commands": {
+        "n": 14,
+        "commits": 14,
+        "clean_rate_pct": 100.0
+      },
+      "negative_controls": {
+        "n": 7,
+        "false_actuations": 0
+      },
+      "degraded_heater_attempts": {
+        "n": 7,
+        "commits": 0,
+        "blocked": 7
+      },
+      "distracted_face_attempts": {
+        "n": 6,
+        "commits": 0,
+        "blocked": 6
+      },
+      "defective_actuator_attempts": {
+        "n": 6,
+        "commits": 0,
+        "blocked": 6
+      },
+      "reason_code_counts": {
+        "HOLD_TOO_SHORT": 804,
+        "NOT_RELEASED": 102,
+        "UNKNOWN_GESTURE": 568,
+        "HEALTH_LOCKED": 14,
+        "HEALTH_STRICT": 7,
+        "OUTSIDE_ZONE": 70,
+        "LOW_SCORE": 69,
+        "USER_DISTRACTED": 12,
+        "DEVICE_FAULT_LOCK": 6,
+        "TARGET_CHANGED": 1
+      }
+    }
+  }
+}

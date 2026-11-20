@@ -75,6 +75,8 @@ export const calibrationEvents = pgTable("calibration_events", {
   f0Hz: doublePrecision("f0_hz").notNull(),
   reason: text("reason").notNull(),
   triggerLogId: text("trigger_log_id"),
+  eraseTokenSalt: text("erase_token_salt"),
+  eraseTokenHash: text("erase_token_hash"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 

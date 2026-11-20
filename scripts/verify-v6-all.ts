@@ -57,7 +57,7 @@ const STEPS: VerificationStep[] = [
   },
   {
     id: "STEP_8_SOAK_REPLAY",
-    label: "Continuous Multi-Hour Clinical Soak Replay & Dual-Objective Gate (tools/soak-replay.ts)",
+    label: "Continuous Multi-Hour Simulated Pathological Replay & Dual-Objective Gate (tools/soak-replay.ts)",
     command: "npx tsx tools/soak-replay.ts",
   },
 ];

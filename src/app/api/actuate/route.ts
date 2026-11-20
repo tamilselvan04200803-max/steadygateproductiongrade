@@ -5,6 +5,7 @@ import { seedDatabase } from "@/db/seed";
 import { evaluateIntentGate } from "@/lib/steady-gate";
 import { eq, desc } from "drizzle-orm";
 import { BaselineMode, UserProfile, Appliance } from "@/lib/types";
+import crypto from "crypto";
 import {
   fanTelemetry,
   acTelemetry,
@@ -16,9 +17,17 @@ import {
 import { appendJsonlLog, saveAppliancesStorageSnapshot } from "@/lib/storage-logger";
 import { dispatchLanActuation } from "@/lib/hardware/lan-bridge";
 import { resolveApplianceRiskTier } from "@/lib/policy/safety-chord-engine";
+import { verifyApiRequest, verifyActuationTicket, ActuationTicket } from "@/lib/security/api-guard";
 
-export async function GET() {
+export async function GET(req: Request) {
   try {
+    const auth = verifyApiRequest(req, { requireAuth: true, requireSession: false });
+    if (!auth.authorized) {
+      return NextResponse.json(
+        { ok: false, success: false, error: auth.reason },
+        { status: auth.status }
+      );
+    }
     await seedDatabase();
     const logs = await db
       .select()
@@ -53,8 +62,52 @@ export async function DELETE() {
 
 export async function POST(req: Request) {
   try {
+    const auth = verifyApiRequest(req, { requireAuth: true, requireSession: false });
+    if (!auth.authorized) {
+      return NextResponse.json(
+        { ok: false, success: false, error: auth.reason },
+        { status: auth.status }
+      );
+    }
     await seedDatabase();
     const body = await req.json();
+
+    // --- Single-use actuation ticket validation ---
+    const ticketBody = body.ticket || {};
+    const { ticketId, sessionId, applianceId: ticketApplianceId, command: ticketCommand, nonce } =
+      ticketBody;
+    if (ticketId && sessionId && ticketApplianceId && ticketCommand && nonce) {
+      const ticket: ActuationTicket = {
+        ticketId,
+        sessionId,
+        applianceId: ticketApplianceId,
+        command: ticketCommand,
+        nonce,
+        issuedAt: body.issuedAt || 0,
+        expiresAt: body.expiresAt || 0,
+        hmac: body.hmac || "",
+      };
+      const secret = process.env.STEADYGATE_API_SECRET!;
+      const verified = verifyActuationTicket(
+        ticket,
+        ticketApplianceId,
+        ticketCommand,
+        secret
+      );
+      if (!verified.valid) {
+        return NextResponse.json(
+          { success: false, error: "INVALID_ACTUATION_TICKET", reason: verified.reason },
+          { status: 403 }
+        );
+      }
+    } else if (ticketId || sessionId) {
+      // Ticket provided but incomplete — reject
+      return NextResponse.json(
+        { success: false, error: "INVALID_ACTUATION_TICKET", reason: "MISSING_TICKET_FIELDS" },
+        { status: 403 }
+      );
+    }
+
     const {
       applianceId,
       userId,

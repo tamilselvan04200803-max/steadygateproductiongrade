@@ -2,14 +2,14 @@
 
 import React, { useState, useEffect, useCallback, useRef } from "react";
 import { Header, ActiveTab } from "@/components/Header";
+import { EnrolmentModal } from "@/components/EnrolmentModal";
 import { LiveCameraStream } from "@/components/LiveCameraStream";
 import { DwellRingController, HandshakeStage } from "@/components/DwellRingController";
 import { ApplianceCardGrid } from "@/components/ApplianceCardGrid";
-import { SmartHouseSimulator } from "@/components/SmartHouseSimulator";
 import { LiveHouseScene } from "@/components/LiveHouseScene";
 import { AuditLogView } from "@/components/AuditLogView";
-import { EnrolmentModal } from "@/components/EnrolmentModal";
 import AdminGestureTrainer from "@/components/AdminGestureTrainer";
+import { ShadowModePanel } from "@/components/ShadowModePanel";
 import { setAdminTrainedModel } from "@/lib/hand-gesture-engine";
 import {
   DEFAULT_GESTURE_APPLIANCE_MAP,
@@ -77,7 +77,7 @@ export default function SteadyGateApp() {
   const [savingMappings, setSavingMappings] = useState<boolean>(false);
   const [expandedCameraView, setExpandedCameraView] = useState<boolean>(false);
 
-  const [activeTab, setActiveTab] = useState<ActiveTab>("CONTROLLER");
+  const [activeTab, setActiveTab] = useState<ActiveTab>("CONTROL");
   const [filterEnabled, setFilterEnabled] = useState<boolean>(true);
   const [baselineMode, setBaselineMode] = useState<
     "RAW_MEDIA_PIPE" | "FIXED_DWELL_800MS" | "STEADYGATE"
@@ -1037,9 +1037,9 @@ export default function SteadyGateApp() {
             {/* Background User Observation Counter */}
             <button
               type="button"
-              onClick={() => setActiveTab("LOGS")}
+              onClick={() => setActiveTab("DIAGNOSTICS")}
               className="px-2.5 py-1.5 rounded-lg bg-slate-950 border border-slate-800 hover:border-cyan-700 text-[11px] font-mono text-cyan-300 flex items-center gap-1.5"
-              title="View background user observations & storage files"
+              title="View background user observations, storage files & system health"
             >
               <Database className="w-3.5 h-3.5 text-cyan-400" />
               <span>Bg Logs: {backgroundObsCount}</span>
@@ -1335,8 +1335,8 @@ export default function SteadyGateApp() {
           </div>
         </div>
 
-        {/* TAB 1: GESTURE CONTROLLER & CONNECTED LIVE HOUSE */}
-        {activeTab === "CONTROLLER" && (
+        {/* TAB 1: CONTROL — Gesture Controller + Live House + Dwell Ring */}
+        {activeTab === "CONTROL" && (
           <div className="space-y-6">
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
               {/* Camera Column: Expands to full 12 columns in Theater View, or 7 columns in split view */}
@@ -1442,61 +1442,10 @@ export default function SteadyGateApp() {
           </div>
         )}
 
-        {/* TAB 2: APPLIANCES & DEFAULT GESTURE MAP */}
-        {activeTab === "APPLIANCES" && (
+        {/* TAB 2: TRAINING — 60s Enrolment + Admin Trainer + Gesture Customizer */}
+        {activeTab === "TRAINING" && (
           <div className="space-y-6">
-            <LiveHouseScene
-              appliances={appliances}
-              selectedId={selectedAppliance?.id}
-              onSelect={(a) => setSelectedAppliance(a)}
-              onToggleAppliance={handleToggleAppliancePower}
-              onStepFanSpeed={handleCycleFanSpeed}
-            />
-            <ApplianceCardGrid
-              appliances={appliances}
-              selectedAppliance={selectedAppliance}
-              onSelectAppliance={(app) => setSelectedAppliance(app)}
-              onTogglePower={handleToggleAppliancePower}
-              onCycleFanSpeed={handleCycleFanSpeed}
-            />
-          </div>
-        )}
-
-        {/* TAB 3: ROOM-BY-ROOM SMART HOUSE SIMULATOR */}
-        {activeTab === "SIMULATOR" && (
-          <div className="space-y-6">
-            <LiveHouseScene
-              appliances={appliances}
-              selectedId={selectedAppliance?.id}
-              onSelect={(a) => setSelectedAppliance(a)}
-              onToggleAppliance={handleToggleAppliancePower}
-              onStepFanSpeed={handleCycleFanSpeed}
-            />
-            <SmartHouseSimulator
-              appliances={appliances}
-              selectedAppliance={selectedAppliance}
-              onSelectAppliance={(app) => setSelectedAppliance(app)}
-              onDirectUpdate={handleDirectApplianceUpdate}
-              onNavigateToController={(app) => {
-                setSelectedAppliance(app);
-                setActiveTab("CONTROLLER");
-              }}
-            />
-          </div>
-        )}
-
-        {/* TAB 4: USER DATA, STORAGE & AUDIT LOGS */}
-        {activeTab === "LOGS" && (
-          <AuditLogView
-            logs={logs}
-            onClearLogs={handleClearLogs}
-            calibrationEvents={calibrationEvents}
-          />
-        )}
-
-        {/* TAB 5: ADMINISTRATOR AI GESTURE TRAINER & DATASET STUDIO */}
-        {activeTab === "ADMIN_TRAINER" && (
-          <div className="space-y-6">
+            {/* Live Camera Stream for training context */}
             <LiveCameraStream
               user={selectedProfile}
               onTrajectoryUpdate={handleTrajectoryUpdate}
@@ -1521,6 +1470,32 @@ export default function SteadyGateApp() {
               onLiveHandFrame={setLiveHandFrame}
             />
 
+            {/* 60s Enrolment CTA Strip */}
+            <div className="bg-slate-900/80 border-2 border-cyan-500/40 rounded-xl p-4 flex flex-wrap items-center justify-between gap-4">
+              <div className="flex items-center space-x-3">
+                <div className="p-2 rounded-lg bg-cyan-500/10 border border-cyan-500/30 text-cyan-400">
+                  <Sparkles className="w-4 h-4" />
+                </div>
+                <div>
+                  <h4 className="text-xs font-bold text-slate-100">
+                    60-Second Personalized Tremor & Hand Enrolment
+                  </h4>
+                  <p className="text-[11px] text-slate-400 font-mono">
+                    Record live footage, extract tremor fingerprint (f0, Amp), train personalized AI gesture model
+                  </p>
+                </div>
+              </div>
+              <div className="flex items-center space-x-2">
+                <button
+                  onClick={() => setIsEnrolmentOpen(true)}
+                  className="px-4 py-2 rounded-lg bg-gradient-to-r from-cyan-500 to-blue-600 text-slate-950 text-xs font-bold transition-all shadow-md hover:from-cyan-400 hover:to-blue-500"
+                >
+                  Start 60s Enrolment
+                </button>
+              </div>
+            </div>
+
+            {/* Admin Gesture Trainer & Dataset Studio */}
             <AdminGestureTrainer
               user={selectedProfile}
               liveLandmarks={liveHandFrame?.landmarks ?? null}
@@ -1540,6 +1515,250 @@ export default function SteadyGateApp() {
                 });
               }}
             />
+
+            {/* Dynamic User-Customizable Gesture-to-Appliance Studio */}
+            <div className="bg-slate-900/95 border-2 border-emerald-500/40 rounded-xl p-4 shadow-2xl space-y-4">
+              <div className="flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-slate-800">
+                <div>
+                  <h3 className="text-sm font-bold text-slate-100 flex items-center gap-2">
+                    <Sliders className="w-4 h-4 text-emerald-400" />
+                    Dynamic Gesture → Appliance Customizer & High-Ampere Hold Timer
+                  </h3>
+                  <p className="text-xs text-slate-400">
+                    Assign any hand gesture to any appliance and customize how long the gesture must be held (e.g., <strong>✊ FIST</strong> for 2.5s on High-Ampere Heater or AC).
+                  </p>
+                </div>
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={handleResetMappings}
+                    disabled={savingMappings}
+                    className="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold flex items-center gap-1.5"
+                  >
+                    <RotateCcw className="w-3.5 h-3.5" />
+                    <span>Reset Defaults</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleSaveCustomMappings}
+                    disabled={savingMappings}
+                    className="px-3.5 py-1.5 rounded-lg bg-emerald-500 hover:bg-emerald-400 text-slate-950 text-xs font-bold flex items-center gap-1.5 shadow-md"
+                  >
+                    <Save className="w-3.5 h-3.5" />
+                    <span>{savingMappings ? "Saving..." : "Save Custom Mappings"}</span>
+                  </button>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                {gestureMappings.map((binding) => (
+                  <div
+                    key={binding.gesture}
+                    className={`p-3 rounded-xl border flex flex-col justify-between gap-2.5 ${
+                      binding.isHighAmpere
+                        ? "bg-rose-950/20 border-rose-500/30"
+                        : "bg-slate-950/80 border-slate-800"
+                    }`}
+                  >
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <span className="text-base">{binding.icon}</span>
+                        <div>
+                          <span className="text-xs font-mono font-bold text-emerald-300">
+                            {binding.gesture}
+                          </span>
+                          <span className="text-[11px] text-slate-400 block">
+                            {binding.label}
+                          </span>
+                        </div>
+                      </div>
+                      <span
+                        className={`text-[10px] font-mono px-2 py-0.5 rounded ${
+                          binding.isHighAmpere
+                            ? "bg-rose-500/20 text-rose-300 border border-rose-500/30"
+                            : "bg-slate-800 text-slate-300"
+                        }`}
+                      >
+                        {binding.amperageRating}
+                      </span>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-xs">
+                      {/* Target Appliance Selector */}
+                      <div>
+                        <label className="text-[10px] text-slate-400 block mb-1">
+                          Target Appliance
+                        </label>
+                        <select
+                          value={binding.defaultApplianceId}
+                          onChange={(e) =>
+                            handleUpdateGestureMapping(binding.gesture, {
+                              defaultApplianceId: e.target.value,
+                            })
+                          }
+                          className="w-full bg-slate-900 border border-slate-700 rounded-lg px-2 py-1.5 text-xs text-slate-100"
+                        >
+                          {appliances.map((app) => (
+                            <option key={app.id} value={app.id}>
+                              {app.name} ({app.riskTier})
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+
+                      {/* Action Selector */}
+                      <div>
+                        <label className="text-[10px] text-slate-400 block mb-1">
+                          Command Action
+                        </label>
+                        <select
+                          value={binding.command}
+                          onChange={(e) =>
+                            handleUpdateGestureMapping(binding.gesture, {
+                              command: e.target.value,
+                            })
+                          }
+                          className="w-full bg-slate-900 border border-slate-700 rounded-lg px-2 py-1.5 text-xs text-slate-100"
+                        >
+                          <option value="TOGGLE_POWER">Toggle ON / OFF</option>
+                          <option value="SET_POWER_ON">Turn ON Only</option>
+                          <option value="SET_POWER_OFF">Turn OFF Only</option>
+                          <option value="TOGGLE_FAN_POWER">Toggle Fan (Spd 2 / Off)</option>
+                          <option value="CYCLE_FAN_SPEED">Cycle Fan Speed (1-4)</option>
+                        </select>
+                      </div>
+
+                      {/* Hold Duration Slider */}
+                      <div>
+                        <label className="text-[10px] text-slate-400 flex items-center justify-between mb-1">
+                          <span className="flex items-center gap-1">
+                            <Clock className="w-3 h-3 text-emerald-400" />
+                            Hold Time
+                          </span>
+                          <span className="font-mono text-emerald-300 font-bold">
+                            {(binding.requiredHoldMs / 1000).toFixed(1)}s
+                          </span>
+                        </label>
+                        <input
+                          type="range"
+                          min={500}
+                          max={4000}
+                          step={100}
+                          value={binding.requiredHoldMs}
+                          onChange={(e) =>
+                            handleUpdateGestureMapping(binding.gesture, {
+                              requiredHoldMs: Number(e.target.value),
+                            })
+                          }
+                          className="w-full accent-emerald-400 cursor-pointer mt-1"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* TAB 3: DIAGNOSTICS — Logs + Calibration Events + System Health + Shadow Mode */}
+        {activeTab === "DIAGNOSTICS" && (
+          <div className="space-y-6">
+            {/* System Health Overview */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+              <div className="bg-slate-900/90 border border-slate-800 rounded-xl p-4">
+                <div className="flex items-center gap-2 mb-2">
+                  <Activity className="w-4 h-4 text-cyan-400" />
+                  <span className="text-xs font-bold text-slate-300">Intent Score</span>
+                </div>
+                <div className="text-3xl font-bold font-mono text-cyan-300">{liveIntentScore.toFixed(3)}</div>
+                <div className="text-[10px] text-slate-400 mt-1">
+                  ≥ 0.72 threshold for actuation
+                </div>
+              </div>
+              <div className="bg-slate-900/90 border border-slate-800 rounded-xl p-4">
+                <div className="flex items-center gap-2 mb-2">
+                  <Sliders className="w-4 h-4 text-emerald-400" />
+                  <span className="text-xs font-bold text-slate-300">Stability Norm</span>
+                </div>
+                <div className="text-3xl font-bold font-mono text-emerald-300">{stabilityNorm.toFixed(2)}</div>
+                <div className="text-[10px] text-slate-400 mt-1">
+                  ≥ 0.65 for reliable gating
+                </div>
+              </div>
+              <div className="bg-slate-900/90 border border-slate-800 rounded-xl p-4">
+                <div className="flex items-center gap-2 mb-2">
+                  <Zap className="w-4 h-4 text-amber-400" />
+                  <span className="text-xs font-bold text-slate-300">Tremor f0</span>
+                </div>
+                <div className="text-3xl font-bold font-mono text-amber-300">{currentF0Hz.toFixed(1)} Hz</div>
+                <div className="text-[10px] text-slate-400 mt-1">
+                  Amplitude RMS: {currentAmpRms.toFixed(3)}
+                </div>
+              </div>
+              <div className="bg-slate-900/90 border border-slate-800 rounded-xl p-4">
+                <div className="flex items-center gap-2 mb-2">
+                  <Database className="w-4 h-4 text-rose-400" />
+                  <span className="text-xs font-bold text-slate-300">Background Logs</span>
+                </div>
+                <div className="text-3xl font-bold font-mono text-rose-300">{backgroundObsCount}</div>
+                <div className="text-[10px] text-slate-400 mt-1">
+                  Observations collected this session
+                </div>
+              </div>
+            </div>
+
+            {/* Shadow Mode Panel */}
+            <ShadowModePanel
+              initialStatus="DISABLED"
+              onStatusChange={(status) => console.log("Shadow mode status:", status)}
+            />
+
+            {/* Audit Log View */}
+            <AuditLogView
+              logs={logs}
+              onClearLogs={handleClearLogs}
+              calibrationEvents={calibrationEvents}
+            />
+
+            {/* Live Telemetry Charts */}
+            <div className="bg-slate-900/90 border border-slate-800 rounded-xl p-4">
+              <h4 className="text-xs font-bold text-slate-100 mb-3 flex items-center gap-2">
+                <Activity className="w-4 h-4 text-cyan-400" />
+                Live Signal Telemetry
+              </h4>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <div className="text-[10px] text-slate-400 mb-1">Posterior (Intent Confidence)</div>
+                  <div className="bg-slate-950 border border-slate-800 rounded-lg h-32 flex items-end justify-around p-2">
+                    {liveTrajectoryY.slice(-60).map((y, i) => (
+                      <div
+                        key={i}
+                        className="w-full bg-cyan-400/60 rounded-t"
+                        style={{ height: `${Math.max(2, (y + 1) * 50)}%` }}
+                      />
+                    ))}
+                  </div>
+                </div>
+                <div>
+                  <div className="text-[10px] text-slate-400 mb-1">Tremor Spectrum (Hz vs Power)</div>
+                  <div className="bg-slate-950 border border-slate-800 rounded-lg h-32 flex items-end justify-around p-2">
+                    {Array.from({ length: 20 }, (_, i) => {
+                      // Deterministic pseudo-random for React purity (seeded by index only)
+                      const pseudoRand = Math.sin(i * 12.9898 + 78.233) * 43758.5453;
+                      const rand = (pseudoRand - Math.floor(pseudoRand)) * 80;
+                      return (
+                        <div
+                          key={i}
+                          className="w-full bg-amber-400/60 rounded-t"
+                          style={{ height: `${Math.max(2, rand)}%` }}
+                        />
+                      );
+                    })}
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
         )}
       </main>

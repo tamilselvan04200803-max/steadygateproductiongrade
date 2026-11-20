@@ -415,6 +415,9 @@ async function runAdversarialSuite() {
   // -------------------------------------------------------------------------
   // SUITE 7: Admin AI Trainer API Stress & Edge Cases (/api/admin-train)
   // -------------------------------------------------------------------------
+  // Setup auth environment variables required by verifyApiRequest guard
+  process.env.STEADYGATE_API_SECRET = "a".repeat(64); // ≥32 chars
+  process.env.ALLOWED_HOSTS = "localhost,127.0.0.1";
   console.log("\n== SUITE 7: Admin AI Trainer API Stress & Edge Cases (/api/admin-train) ==");
   {
     // 7.1 GET endpoint verification
@@ -622,6 +625,9 @@ async function runAdversarialSuite() {
   }
 
   // Restore storage to preserve pre-test environment
+  // Cleanup auth env vars
+  delete process.env.STEADYGATE_API_SECRET;
+  delete process.env.ALLOWED_HOSTS;
   restoreStorage();
 
   console.log("\n===============================================================================");

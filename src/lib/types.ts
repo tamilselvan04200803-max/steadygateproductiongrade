@@ -151,6 +151,9 @@ export interface MondrianConformalResult {
   topClass: RecognizedGesture;
   topProbability: number;
   thresholdQuantile: number;
+  alphaUsed?: number;
+  profileId?: string;
+  conditionalCoverageValid?: boolean;
 }
 
 export type IntentionalityStatus =

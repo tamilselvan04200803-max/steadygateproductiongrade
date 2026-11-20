@@ -52,7 +52,7 @@ interface BenchmarkSummary {
   hagridAccuracyPct: number;
   hagridCorrect: number;
   hagridTotal: number;
-  fullHagrid17kAccuracyPct: number;
+  hagridBenchmarkAccuracyPct: number;
   objectGraspFalsePositivePct: number;
   objectGraspRejected: number;
   objectGraspTotal: number;
@@ -547,14 +547,14 @@ export default function AdminGestureTrainer({
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5">
           <div className="p-3.5 rounded-xl bg-slate-950/90 border border-slate-800">
             <div className="flex items-center justify-between text-xs text-slate-400">
-              <span>HaGRID Real Dataset (N=17,213)</span>
+              <span>HaGRID Benchmark (N=500 stratified)</span>
               <Database className="w-4 h-4 text-cyan-400" />
             </div>
             <div className="text-2xl font-bold font-mono text-cyan-300 mt-1">
-              {benchmark.fullHagrid17kAccuracyPct}%
+              {benchmark.hagridBenchmarkAccuracyPct}%
             </div>
             <div className="text-[11px] text-slate-400 mt-0.5">
-              Stratified 500 Subset: <strong>{benchmark.hagridAccuracyPct}%</strong> ({benchmark.hagridCorrect}/{benchmark.hagridTotal})
+              Full dataset: 17,213 samples · Subset: <strong>{benchmark.hagridAccuracyPct}%</strong> ({benchmark.hagridCorrect}/{benchmark.hagridTotal})
             </div>
           </div>
 

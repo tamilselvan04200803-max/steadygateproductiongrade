@@ -11,7 +11,7 @@ import {
   Sparkles,
 } from "lucide-react";
 
-export type ActiveTab = "CONTROLLER" | "SIMULATOR" | "APPLIANCES" | "LOGS" | "ADMIN_TRAINER";
+export type ActiveTab = "CONTROL" | "TRAINING" | "DIAGNOSTICS";
 
 interface HeaderProps {
   profiles: UserProfile[];
@@ -60,66 +60,42 @@ export const Header: React.FC<HeaderProps> = ({
             </div>
           </div>
 
-          {/* Navigation Tabs (Cleaned & Streamlined — Unwanted tabs removed) */}
+          {/* Three Focused Views Navigation */}
           <nav className="flex items-center space-x-1 bg-slate-900/90 p-1 rounded-xl border border-slate-800 overflow-x-auto">
             <button
-              onClick={() => setActiveTab("CONTROLLER")}
+              onClick={() => setActiveTab("CONTROL")}
               className={`flex items-center space-x-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all whitespace-nowrap ${
-                activeTab === "CONTROLLER"
+                activeTab === "CONTROL"
                   ? "bg-cyan-500 text-slate-950 font-semibold shadow-sm"
                   : "text-slate-400 hover:text-slate-200 hover:bg-slate-800/60"
               }`}
             >
               <Activity className="w-3.5 h-3.5" />
-              <span>Gesture Controller & Live House</span>
+              <span>Control</span>
             </button>
 
             <button
-              onClick={() => setActiveTab("APPLIANCES")}
+              onClick={() => setActiveTab("TRAINING")}
               className={`flex items-center space-x-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all whitespace-nowrap ${
-                activeTab === "APPLIANCES"
-                  ? "bg-cyan-500 text-slate-950 font-semibold shadow-sm"
-                  : "text-slate-400 hover:text-slate-200 hover:bg-slate-800/60"
-              }`}
-            >
-              <Sliders className="w-3.5 h-3.5" />
-              <span>Appliances & Gesture Map</span>
-            </button>
-
-            <button
-              onClick={() => setActiveTab("SIMULATOR")}
-              className={`flex items-center space-x-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all whitespace-nowrap ${
-                activeTab === "SIMULATOR"
+                activeTab === "TRAINING"
                   ? "bg-emerald-500 text-slate-950 font-semibold shadow-sm"
                   : "text-slate-400 hover:text-slate-200 hover:bg-slate-800/60"
               }`}
             >
-              <Home className="w-3.5 h-3.5" />
-              <span>Room-by-Room House</span>
+              <Sparkles className="w-3.5 h-3.5" />
+              <span>Training</span>
             </button>
 
             <button
-              onClick={() => setActiveTab("LOGS")}
+              onClick={() => setActiveTab("DIAGNOSTICS")}
               className={`flex items-center space-x-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all whitespace-nowrap ${
-                activeTab === "LOGS"
-                  ? "bg-cyan-500 text-slate-950 font-semibold shadow-sm"
+                activeTab === "DIAGNOSTICS"
+                  ? "bg-amber-500 text-slate-950 font-semibold shadow-sm"
                   : "text-slate-400 hover:text-slate-200 hover:bg-slate-800/60"
               }`}
             >
               <FileText className="w-3.5 h-3.5" />
-              <span>User Data & Storage Logs</span>
-            </button>
-
-            <button
-              onClick={() => setActiveTab("ADMIN_TRAINER")}
-              className={`flex items-center space-x-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all whitespace-nowrap ${
-                activeTab === "ADMIN_TRAINER"
-                  ? "bg-amber-400 text-slate-950 font-bold shadow-sm"
-                  : "text-amber-300 hover:text-amber-200 hover:bg-slate-800/60 border border-amber-500/30"
-              }`}
-            >
-              <ShieldCheck className="w-3.5 h-3.5" />
-              <span>Admin AI Trainer</span>
+              <span>Diagnostics</span>
             </button>
           </nav>
 

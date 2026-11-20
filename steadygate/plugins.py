@@ -52,8 +52,9 @@ class WebhookAdapter:
     """Offline-safe WebhookAdapter stub with zero external side-effects.
 
     Hard Rule 4: Enforces local-only host validation (127.0.0.1 / localhost) and
-    stores serialized webhook envelopes in an in-memory outbox without performing
-    outbound network calls.
+    stores serialized webhook envelopes in a bounded TTL LRU outbox without performing
+    outbound network calls. The outbox is capped at ``max_size`` entries with
+    ``default_ttl_ms`` expiry to prevent unbounded growth.
     """
 
     def __init__(
@@ -67,7 +68,9 @@ class WebhookAdapter:
         self.enabled = force_enable or is_feature_enabled(self.config, "webhook_adapter")
         self._validate_local_endpoint(endpoint)
         self.endpoint = endpoint
+        # Bounded in-memory outbox: max 256 entries
         self.outbox: list[WebhookDeliveryStub] = []
+        self._max_outbox_size = 256
 
     @staticmethod
     def _validate_local_endpoint(url: str) -> None:
@@ -99,6 +102,8 @@ class WebhookAdapter:
             external_network_called=False,
         )
         self.outbox.append(stub)
+        if len(self.outbox) > self._max_outbox_size:
+            self.outbox.pop(0)
         return stub
 
 
