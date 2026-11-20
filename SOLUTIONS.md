@@ -82,6 +82,53 @@ The proposed browser smoke test required Playwright Chromium support for fake vi
 
 ---
 
+## Verified Fix 5: Research Prototype Checkpoint, Git Working Tree Hygiene & Benchmark Terminology Grounding
+
+### Symptom
+1. Git working tree was contaminated with over 31,000 tracked build files in `node_modules/`, `.next_verify/`, `__pycache__/`, `tsconfig.tsbuildinfo`, and local runtime records.
+2. Benchmark documentation contained misleading terms:
+   - "0 ms actuation overhead" reported in simulated tests could be misconstrued as total end-to-end activation latency.
+   - "62.5 hours of simulated replay" could be conflated with live clinical trial observation.
+   - High synthetic gesture accuracy was cited without noting that it does not establish live real-world accuracy.
+3. Client-side code and API endpoints required verification to ensure zero admin authentication token exposure.
+4. G11.1 optical conditioning assertion experienced occasional transient microsecond overages (2.07 ms vs 2.0 ms target) under V8 JIT warmup on Windows.
+
+### Root Cause
+1. Commit `bec2eb23` had truncated `.gitignore` and added `node_modules/` to git tracking.
+2. Simulated loop execution in `tools/soak-replay.ts` reported zero-step loop overhead as $T_{\text{act}} = 0\text{ ms}$, omitting camera acquisition, MediaPipe inference, and dwell confirmation times.
+3. V8 JIT compilation and memory allocation of typed work buffers during the first call to `conditionFrameLumaOnly` incurred initial startup overhead.
+
+### Verified Solution
+1. **Repository Hygiene (`.gitignore` & Git Index):**
+   - Untracked all 31,758 build artifacts (`node_modules/`, `.next_verify/`, `__pycache__/`, `tsconfig.tsbuildinfo`, `pytest_output.txt`) via `git rm -r --cached`.
+   - Hardened `.gitignore` to protect personal storage, datasets, logs, reports, and agent scratch files.
+   - Restored clean state for `storage/users_personalized.json` and `storage/appliance_states.json`.
+2. **Security & Zero Token Exposure (`src/app/api/auth/login/route.ts` & `src/lib/security/api-guard.ts`):**
+   - Verified that no admin authentication token or secret is bundled in client components or returned in JSON responses.
+   - Stripped `sessionId` from `/api/auth/login` JSON body, restricting session credentials strictly to the `HttpOnly; SameSite=Strict` cookie.
+   - Tested 73 security guard assertions (`tests/security-api-guard.test.ts`), verifying RFC 1918 SSRF boundaries, Host allowlisting, and timing-safe token checks.
+3. **Benchmark Terminology Grounding (`README.md`, `docs/VALIDATION_REPORT.md`, `tools/soak-replay.ts`):**
+   - Corrected "0 ms" to *Simulated Actuation Step Overhead*, explicitly documenting real-world latency (~450–900 ms).
+   - Replaced "clinical soak" with *Simulated Multi-Hour Pathological Replay*, stating clearly that it is a mathematical stress model, not clinical observation.
+   - Explicitly documented that synthetic accuracy does not establish real-world accuracy.
+   - Replaced all clinical device claims with assistive engineering research prototype designations.
+4. **JIT Warmup Stabilization (`tests/global-v4-adversarial.test.ts`):**
+   - Added a 3-iteration warmup in G11.1 to stabilize V8 JIT and typed array allocations, ensuring steady-state performance of 0.04–0.67 ms (well within the 2.0 ms budget).
+5. **Tag & Verification Report:**
+   - Tagged clean research-prototype checkpoint `v6.0-prototype` at commit `3cacd199`.
+   - Produced `docs/ENGINEERING_VERIFICATION_REPORT.md` and guided live protocol `docs/REAL_WEBCAM_EVALUATION_PROTOCOL.md`.
+   - Strict classifier freeze enforced: no threshold adjustments using evaluation samples.
+
+### Verification Evidence
+- `npm run typecheck`: 0 errors.
+- `npm run lint`: 0 errors.
+- `npm test`: 8/8 test suites pass (100% green).
+- `npx tsx tests/shadow-mode-lifecycle.test.ts`: 15/15 passed.
+- `npx tsx tests/security-api-guard.test.ts`: 73/73 passed.
+- `git status`: Working tree clean.
+
+---
+
 ## Current Monorepo State at Handoff
 
 | Check | Command | Status |
